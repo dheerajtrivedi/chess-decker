@@ -84,6 +84,13 @@ body {
   align-items:center;
   box-sizing: border-box;
 }
+.summary-app{
+  min-height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  box-sizing: border-box;
+}
 
 .layout{
   width:100%;
@@ -107,7 +114,7 @@ body {
 }
 
 .card{
-  widtch: 100%
+  width: 100%
   background:#262626;
   border:1px solid #333;
   border-radius:18px;
@@ -334,7 +341,8 @@ body {
   font-weight:300;
 
   cursor:pointer;
-  transition:all .15s ease;
+  transition:all .2s ease;
+  
 }
 .status-row{
   display:flex;
@@ -361,6 +369,7 @@ body {
 
 .icon-btn:hover{
   color:#ffffff;
+  transform:translateY(-1px);
 }
 
 .icon-btn:active{
@@ -379,10 +388,170 @@ body {
     max-width: 720px;
   }
 }
+.screen{
+  position:absolute;
+  inset:0;
+
+  opacity:0;
+  pointer-events:none;
+
+  transform:translateY(12px);
+
+  transition:
+    opacity 300ms ease,
+    transform 300ms ease;
+}
+
+.screen.active{
+  opacity:1;
+  pointer-events:auto;
+  transform:translateY(0);
+}
+.summary-screen{
+  width:100%;
+  max-width:800px;
+  min-height: calc(85vh - 40px); 
+  border-radius:18px;
+  border:1px solid #333;
+  box-shadow:0 10px 40px rgba(0,0,0,.35);
+
+  justify-content: center;
+  align-content: center;
+  display:flex;
+
+  flex-direction:column;
+  padding:30px;
+  gap:30px;
+  background:#2f2f2f;
+  color:#fff;
+}
+
+.summary-header h1{
+  margin:0;
+  font-size:2rem;
+  font-weight:700;
+}
+
+.summary-header p{
+  margin-top:6px;
+  color:#8f8f8f;
+}
+
+.summary-stats{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap: 20px;
+}
+
+.stat-card{
+  background:#1f1f1f;
+  border-radius:5px;
+  padding:20px;
+  border:1px solid #2c2c2c;
+  box-shadow:0 10px 40px rgba(0,0,0,.35);
+}
+
+.stat-card.primary{
+  border-color:#4b7cff;
+}
+
+.stat-card.success{
+  border-color:#35c759;
+}
+
+.stat-card.danger{
+  border-color:#ff5d5d;
+}
+.stat-card.amber{
+  border-color:  #e09b13;
+}
+.stat-label{
+  color:#9b9b9b;
+  font-size:0.9rem;
+  margin-bottom:8px;
+}
+
+.stat-value{
+  font-size:1.5rem;
+  font-weight:700;
+}
+
+.chart-card{
+  background:#1f1f1f;
+  border-radius:18px;
+  padding:24px;
+  border:1px solid #2c2c2c;
+}
+
+.chart-title{
+  font-size:1rem;
+  font-weight:600;
+  margin-bottom:20px;
+}
+
+.chart-placeholder{
+  height:220px;
+  display:flex;
+  align-items:flex-end;
+  justify-content:space-between;
+  gap:16px;
+}
+
+.bar{
+  flex:1;
+  background:#4b7cff;
+  border-radius:12px 12px 0 0;
+  opacity:.5;
+  transition:.3s;
+}
+
+.bar.current{
+  opacity:1;
+}
+
+.chart-labels{
+  margin-top:12px;
+  display:flex;
+  justify-content:space-between;
+  color:#8a8a8a;
+  font-size:.85rem;
+}
+
+.restart-btn{
+  margin-top:auto;
+  align-self:center;
+
+  border:none;
+  background:#4b7cff;
+  color:white;
+
+  padding:14px 28px;
+  border-radius:14px;
+
+  font-size:1rem;
+  font-weight:600;
+
+  cursor:pointer;
+
+  transition:
+    transform .2s ease,
+    opacity .2s ease;
+}
+
+.restart-btn:hover{
+  transform:translateY(-2px);
+}
+
+.restart-btn:active{
+  transform:translateY(0);
+}
 `;
 document.head.appendChild(style);
 
-app.innerHTML = `
+const puzzleScreen = document.getElementById("puzzleScreen");
+const summaryScreen = document.getElementById("summaryScreen");
+
+puzzleScreen.innerHTML = `
 <div class="app">
   <div class="layout">
 
@@ -421,6 +590,48 @@ app.innerHTML = `
   </div>
 </div>
 `;
+summaryScreen.innerHTML = `
+<div class = "summary-app">
+  <div class="summary-screen">
+
+    <div class="summary-header">
+      <h1>Session Statistics</h1>
+    </div>
+
+    <div class="summary-stats">
+
+      <div class="stat-card primary">
+        <div class="stat-label">Total Time</div>
+        <div class="stat-value" id = "statTimeTaken">12m 47s</div>
+      </div>
+
+      <div class="stat-card success">
+        <div class="stat-label">Correct</div>
+        <div class="stat-value" id = "statCorrect">42</div>
+      </div>
+
+      <div class="stat-card danger">
+        <div class="stat-label">Incorrect</div>
+        <div class="stat-value" id = "statIncorrect">8</div>
+      </div>
+
+      <div class="stat-card amber">
+        <div class="stat-label">Skipped</div>
+        <div class="stat-value" id = "statSkipped">8</div>
+      </div>
+
+    </div>
+    <button id="restartBtn" class="restart-btn">
+      Restart Training
+    </button>
+
+  </div>
+</div>
+`;
+
+document
+  .getElementById("restartBtn")
+  .addEventListener("click", () => location.reload());
 
 const boardContainer = document.getElementById("board");
 const statusText = document.getElementById("statusText");
@@ -428,6 +639,10 @@ const sideIndicator = document.getElementById("sideIndicator");
 const messageBox = document.getElementById("messageBox");
 const puzzleCounter = document.getElementById("puzzleCounter");
 const puzzleTitle = document.getElementById("puzzleTitle");
+const statTimeTaken = document.getElementById("statTimeTaken");
+const statCorrect = document.getElementById("statCorrect");
+const statIncorrect = document.getElementById("statIncorrect");
+const statSkipped = document.getElementById("statSkipped");
 
 function getPuzzleMoves() {
   return PUZZLE.moves
@@ -554,18 +769,23 @@ function loadCurrentPuzzle() {
   PUZZLE.moves = moves;
   PUZZLE.sideToMove = sideToMove;
 }
-
+async function endPuzzleTrainer () {
+  let timeTaken = stopTimer();
+  setMessage(`Solved in ${timeTaken}`);
+  board.flipBoard('w');
+  board.setPosition("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+  puzzleCounter.textContent = "!!";
+  puzzleTitle.textContent = "COMPLETED!";
+  await sleep(700);
+  showSummary(timeTaken);
+  return;
+}
 async function resetPuzzle() {
   solved = false;
   currentStep = 0;
   mistakes = 0;
-  if (puzzleCount >= puzzles.length) {
-    let timeTaken = stopTimer();
-    setMessage(`Solved in ${timeTaken}`);
-    board.flipBoard('w');
-    board.setPosition("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
-    puzzleCounter.textContent = "!!";
-    puzzleTitle.textContent = "COMPLETED!";
+  if (puzzleCount >= puzzles.length) { 
+    endPuzzleTrainer();
     return;
   }
   loadCurrentPuzzle();
@@ -782,6 +1002,15 @@ function resetTimer() {
   stopTimer();
   elapsedSeconds = 0;
   updateTimerDisplay();
+}
+
+function showSummary(timeTaken) {
+  statTimeTaken.textContent = timeTaken;
+  statCorrect.textContent = trackerData.filter(item => item.status === "correct").length;
+  statIncorrect.textContent = trackerData.filter(item => item.status === "wrong").length;
+  statSkipped.textContent = trackerData.filter(item => item.status === "skipped").length;
+  puzzleScreen.classList.remove("active");
+  summaryScreen.classList.add("active");
 }
   
 updateTimerDisplay();
