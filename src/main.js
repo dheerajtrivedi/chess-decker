@@ -1,24 +1,63 @@
 // src/main.js
 
 import { SimpleChessBoard } from "@0dexz0/simple-chess-board";
+import * as XLSX from "xlsx";
 
-const title =  "Mate Combination";
-const fen = "r2qr1k1/b1p2ppp/pp4n1/P1P1p3/4P1n1/B2P2Pb/3NBP1P/RN1QR1K1 b - - 1 16";
-const moves = "b6c5 e2g4 h3g4 d1g4";
-const sideToMove = fen.split(" ")[1] === "w" ? "b" : "w";
+async function loadPuzzles() {
+  const response = await fetch("src/puzzles.xlsx");
+  const arrayBuffer = await response.arrayBuffer();
 
-const PUZZLE = {
-  title: title,
-  fen: fen,
-  moves: moves,
-  sideToMove: sideToMove,
+  const workbook = XLSX.read(arrayBuffer, { type: "array" });
+
+  const sheetName = workbook.SheetNames[0];
+  const sheet = workbook.Sheets[sheetName];
+
+  const rows = XLSX.utils.sheet_to_json(sheet);
+
+  return rows;
+}
+
+const puzzles = await loadPuzzles();
+
+console.log(puzzles);
+
+// let title =  "Mate Combination";
+// let fen = "r2qr1k1/b1p2ppp/pp4n1/P1P1p3/4P1n1/B2P2Pb/3NBP1P/RN1QR1K1 b - - 1 16";
+// let moves = "b6c5 e2g4 h3g4 d1g4";
+// let sideToMove = fen.split(" ")[1] === "w" ? "b" : "w";
+
+// const PUZZLE = {
+//   title: title,
+//   fen: fen,
+//   moves: moves,
+//   sideToMove: sideToMove,
+// };
+
+let PUZZLE = {
+  title: "",
+  fen: "",
+  moves: "",
+  sideToMove: "",
 };
+async function loadFirstPuzzle() {
+  let title =  puzzles[0].Rating;
+  let fen = puzzles[0].FEN;
+  let moves = puzzles[0].Moves;
+  let sideToMove = fen.split(" ")[1] === "w" ? "b" : "w";
+  PUZZLE.title = title;
+  PUZZLE.fen = fen;
+  PUZZLE.moves = moves;
+  PUZZLE.sideToMove = sideToMove;
+}
+
+loadFirstPuzzle()
 
 let board;
 let mistakes = 0;
 let solved = false;
 let currentStep = 0;
 let ignoreMoveEvents = false;
+let puzzleCount = 0;
 
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -137,6 +176,11 @@ button{
   color:#72df7b;
 }
 
+.next {
+  background: #d08a00;
+  color:white;
+}
+
 .puzzle-tracker {
   display: flex;
   flex-wrap: wrap;
@@ -148,7 +192,7 @@ button{
   display: flex;
   flex-direction: column;
   align-items: center;
-  min-width: 30px;
+  min-width: 20px;
 }
 
 .tracker-icon {
@@ -196,6 +240,31 @@ button{
 .tracker-item.skipped .tracker-rating {
   color: #d08a00;
 }
+.trackerInfo{
+  flex: 1;
+  min-height: 0;
+  background:#2f2f2f;
+  border-radius:12px;
+  padding:12px;
+}
+.puzzleCounter {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  min-width: 48px;
+  height: 100px;
+  padding: 0 50px;
+
+  background: #2f2f2f;
+  border-radius: 12px;
+
+  color: #f0d9b5;
+  font-size: 50px;
+  font-weight: 1000;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  user-select: none;
+}
 
 @media(max-width:950px){
   .layout{
@@ -215,7 +284,7 @@ app.innerHTML = `
 
     <div class="card">
 
-      <div class="title">${PUZZLE.title}</div>
+      <div class="title" id="puzzleTitle"></div>
 
       <div class="info">
         <div class="label">Status</div>
@@ -240,11 +309,12 @@ app.innerHTML = `
         <button id="hintBtn" class="primary">Hint</button>
         <button id="resetBtn" class="secondary">Reset</button>
         <button id="solutionBtn" class="danger">Show Solution</button>
-        <button id="Next" class="danger">Next</button>
+        <button id="nextBtn" class="next">Next</button>
       </div>
     </div>
     <div class = "card">
-      <div class="info">
+      <div class="puzzleCounter" id="puzzleCounter"> 1 </div>
+      <div class = "trackerInfo">
         <div id="puzzleTracker" class="puzzle-tracker"></div>
       </div>
     </div>
@@ -258,6 +328,8 @@ const statusText = document.getElementById("statusText");
 const stepText = document.getElementById("stepText");
 const mistakesText = document.getElementById("mistakesText");
 const messageBox = document.getElementById("messageBox");
+const puzzleCounter = document.getElementById("puzzleCounter");
+const puzzleTitle = document.getElementById("puzzleTitle");
 
 function getPuzzleMoves() {
   return PUZZLE.moves
@@ -324,6 +396,7 @@ function setMessage(text) {
 
 function updateUI() {
   mistakesText.textContent = mistakes;
+  puzzleTitle.textContent = PUZZLE.title;
 
   if (solved) {
     statusText.innerHTML =
@@ -369,19 +442,32 @@ async function advancePuzzle() {
     updateUI();
 
     setMessage("Puzzle Solved ✓");
+    nextPuzzle();
     return;
   }
 
   updateUI();
 }
 
+function loadCurrentPuzzle() {
+  let title =  puzzles[puzzleCount].Rating;
+  let fen = puzzles[puzzleCount].FEN;
+  let moves = puzzles[puzzleCount].Moves;
+  let sideToMove = fen.split(" ")[1] === "w" ? "b" : "w";
+  PUZZLE.title = title;
+  PUZZLE.fen = fen;
+  PUZZLE.moves = moves;
+  PUZZLE.sideToMove = sideToMove;
+}
+
 async function resetPuzzle() {
   solved = false;
   currentStep = 0;
-
+  loadCurrentPuzzle();
   board.flipBoard('w')
   board.setPosition(PUZZLE.fen);
   board.flipBoard(PUZZLE.sideToMove);
+  board.playerColor = PUZZLE.sideToMove
   board.clearHistory();
   board.clearMarks("persistent");
 
@@ -399,6 +485,7 @@ async function resetPuzzle() {
   updateUI();
 
   setMessage("Find the best move.");
+  puzzleCounter.textContent = puzzleCount + 1;
 }
 
 function showHint() {
@@ -509,16 +596,11 @@ document
 document
   .getElementById("solutionBtn")
   .addEventListener("click", replaySolution);
+  document
+  .getElementById("nextBtn")
+  .addEventListener("click", skipPuzzle);
 
-  const trackerData = [
-    { rating: 324, status: "wrong" },
-    { rating: 381, status: "correct" },
-    { rating: 487, status: "correct" },
-    { rating: 575, status: "skipped" },
-    { rating: 575, status: "skipped" },
-    { rating: 575, status: "skipped" },
-    { rating: 575, status: "skipped" },
-  ];
+  const trackerData = [];
   
   function renderPuzzleTracker(data) {
     const container = document.getElementById("puzzleTracker");
@@ -543,6 +625,19 @@ document
         `;
       })
       .join("");
+  }
+
+  function skipPuzzle() {
+    trackerData.push({ rating: puzzles[puzzleCount].Rating, status: "skipped" });
+    renderPuzzleTracker(trackerData);
+    puzzleCount++;
+    resetPuzzle();
+  }
+  function nextPuzzle() {
+    trackerData.push({ rating: puzzles[puzzleCount].Rating, status: "correct" });
+    renderPuzzleTracker(trackerData);
+    puzzleCount++;
+    resetPuzzle();
   }
   
   renderPuzzleTracker(trackerData);
