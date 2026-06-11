@@ -58,6 +58,9 @@ let solved = false;
 let currentStep = 0;
 let ignoreMoveEvents = false;
 let puzzleCount = 0;
+let timerInterval = null;
+let elapsedSeconds = 0;
+let trackerData = [];
 
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -576,6 +579,10 @@ puzzleScreen.innerHTML = `
       <div class="title" id="puzzleTitle">...</div>
 
       <div class="action-buttons">
+        <button id="restartBtn2" class="icon-btn" title="Restart Puzzles">
+          <span>⟳</span>
+        </button>
+
         <button id="hintBtn" class="icon-btn" title="Hint">
           <span>⌕</span>
         </button>
@@ -629,10 +636,6 @@ summaryScreen.innerHTML = `
 </div>
 `;
 
-document
-  .getElementById("restartBtn")
-  .addEventListener("click", () => location.reload());
-
 const boardContainer = document.getElementById("board");
 const statusText = document.getElementById("statusText");
 const sideIndicator = document.getElementById("sideIndicator");
@@ -643,6 +646,9 @@ const statTimeTaken = document.getElementById("statTimeTaken");
 const statCorrect = document.getElementById("statCorrect");
 const statIncorrect = document.getElementById("statIncorrect");
 const statSkipped = document.getElementById("statSkipped");
+const timerEl = document.getElementById("timer");
+
+
 
 function getPuzzleMoves() {
   return PUZZLE.moves
@@ -915,12 +921,18 @@ document
   .getElementById("nextBtn")
   .addEventListener("click", skipPuzzle);
 
-  const trackerData = [];
+  document
+  .getElementById("restartBtn")
+  .addEventListener("click", restartPuzzleTrainer);
+
+  document
+  .getElementById("restartBtn2")
+  .addEventListener("click", restartPuzzleTrainer);
   
-  function renderPuzzleTracker(data) {
+  function renderPuzzleTracker() {
     const container = document.getElementById("puzzleTracker");
   
-    container.innerHTML = data
+    container.innerHTML = trackerData
       .map((item) => {
         const status = item.status; // "correct" | "wrong" | "skipped"
   
@@ -944,32 +956,18 @@ document
 
   function skipPuzzle() {
     trackerData.push({ rating: puzzles[puzzleCount].Rating, status: "skipped" });
-    renderPuzzleTracker(trackerData);
+    renderPuzzleTracker();
     puzzleCount++;
     resetPuzzle();
   }
+
   function nextPuzzle() {
     if (mistakes === 0) trackerData.push({ rating: puzzles[puzzleCount].Rating, status: "correct" });
     else trackerData.push({ rating: puzzles[puzzleCount].Rating, status: "wrong" });
-    renderPuzzleTracker(trackerData);
+    renderPuzzleTracker();
     puzzleCount++;
     resetPuzzle();
   }
-  
-  renderPuzzleTracker(trackerData);
-  
-  // // Example updates:
-  // trackerData.push({ rating: 1120, solved: true });
-  // renderPuzzleTracker(trackerData);
-  
-  // // Change a result:
-  // trackerData[0].solved = true;
-  // renderPuzzleTracker(trackerData);
-
-let timerInterval = null;
-let elapsedSeconds = 0;
-
-const timerEl = document.getElementById("timer");
 
 function updateTimerDisplay() {
   const minutes = Math.floor(elapsedSeconds / 60);
@@ -1012,8 +1010,30 @@ function showSummary(timeTaken) {
   puzzleScreen.classList.remove("active");
   summaryScreen.classList.add("active");
 }
-  
-updateTimerDisplay();
 
+function restartPuzzleTrainer() {
+  mistakes = 0;
+  solved = false;
+  currentStep = 0;
+  ignoreMoveEvents = false;
+  puzzleCount = 0;
+  trackerData = [];
+  puzzleTitle.textContent = "...";
+
+  summaryScreen.classList.remove("active");
+  puzzleScreen.classList.add("active");
+
+  resetTimer();
+  resetPuzzle();
+  renderPuzzleTracker();
+  updateUI()
+  startTimer();
+
+  summaryScreen.classList.remove("active");
+  puzzleScreen.classList.add("active");
+}
+
+updateTimerDisplay();
+renderPuzzleTracker();
 resetPuzzle();
 startTimer()
