@@ -61,6 +61,7 @@ let puzzleCount = 0;
 let timerInterval = null;
 let elapsedSeconds = 0;
 let trackerData = [];
+let tookHint = 0;
 
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -340,8 +341,8 @@ body {
   border-radius:0px;
 
   color:#9aa0a6;
-  font-size:25px;
-  font-weight:300;
+  font-size:20px;
+  font-weight:100;
 
   cursor:pointer;
   transition:all .2s ease;
@@ -580,15 +581,15 @@ puzzleScreen.innerHTML = `
 
       <div class="action-buttons">
         <button id="restartBtn2" class="icon-btn" title="Restart Puzzles">
-          <span>⟳</span>
+          <span>↻</span>
         </button>
 
         <button id="hintBtn" class="icon-btn" title="Hint">
-          <span>⌕</span>
+          <span>✦</span>
         </button>
 
         <button id="nextBtn" class="icon-btn" title="Next Puzzle">
-          <span>›</span>
+          <span>➟</span>
         </button>
       </div>
 
@@ -790,6 +791,7 @@ async function resetPuzzle() {
   solved = false;
   currentStep = 0;
   mistakes = 0;
+  tookHint = 0;
   if (puzzleCount >= puzzles.length) { 
     endPuzzleTrainer();
     return;
@@ -821,7 +823,7 @@ async function resetPuzzle() {
 
 function showHint() {
   if (solved) return;
-
+  tookHint = 1;
   board.clearMarks("persistent");
 
   const move = getExpectedMove();
@@ -955,14 +957,16 @@ document
   }
 
   function skipPuzzle() {
-    trackerData.push({ rating: puzzles[puzzleCount].Rating, status: "skipped" });
+    if (mistakes >= 0) trackerData.push({ rating: puzzles[puzzleCount].Rating, status: "wrong" });
+    else trackerData.push({ rating: puzzles[puzzleCount].Rating, status: "skipped" });
     renderPuzzleTracker();
     puzzleCount++;
     resetPuzzle();
   }
 
   function nextPuzzle() {
-    if (mistakes === 0) trackerData.push({ rating: puzzles[puzzleCount].Rating, status: "correct" });
+    if (mistakes === 0 && tookHint == 0) trackerData.push({ rating: puzzles[puzzleCount].Rating, status: "correct" });
+    else if (mistakes === 0 && tookHint >= 0) trackerData.push({ rating: puzzles[puzzleCount].Rating, status: "skipped" });
     else trackerData.push({ rating: puzzles[puzzleCount].Rating, status: "wrong" });
     renderPuzzleTracker();
     puzzleCount++;
