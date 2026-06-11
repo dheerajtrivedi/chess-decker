@@ -112,8 +112,22 @@ body{
 }
 
 .title{
-  font-size:24px;
-  font-weight:700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  height: 50px;
+  min-width: 80px;
+  padding: 0 12px;
+
+  border-radius: 8px;
+
+  color:rgb(255, 255, 255);
+  font-size: 30px;
+  font-weight: 700;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+
+  user-select: none;
 }
 
 .info{
@@ -281,7 +295,7 @@ button{
   color: #f0d9b5;
   font-size: 16px;
   font-weight: 700;
-  font-family: system-ui, sans-serif;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 
   user-select: none;
 }
@@ -309,11 +323,6 @@ app.innerHTML = `
       <div class="info">
         <div class="label">Status</div>
         <div class="value" id="statusText">In Progress</div>
-      </div>
-
-      <div class="info">
-        <div class="label">Current Step</div>
-        <div class="value" id="stepText"></div>
       </div>
 
       <div class="info">
@@ -346,7 +355,6 @@ app.innerHTML = `
 
 const boardContainer = document.getElementById("board");
 const statusText = document.getElementById("statusText");
-const stepText = document.getElementById("stepText");
 const mistakesText = document.getElementById("mistakesText");
 const messageBox = document.getElementById("messageBox");
 const puzzleCounter = document.getElementById("puzzleCounter");
@@ -422,23 +430,15 @@ function updateUI() {
   if (solved) {
     statusText.innerHTML =
       '<span class="success">Puzzle Solved ✓</span>';
-
-    stepText.textContent = "Completed";
     return;
   }
-
   statusText.textContent = "In Progress";
-
-  stepText.textContent =
-    `${getCurrentUserStep()} / ${getUserStepCount()}`;
 }
 
 async function playAutomaticMove(move) {
   ignoreMoveEvents = true;
 
   executeMove(move);
-
-  await sleep(500);
 
   ignoreMoveEvents = false;
 }
