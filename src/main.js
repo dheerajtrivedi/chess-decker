@@ -69,11 +69,12 @@ style.textContent = `
   box-sizing:border-box;
 }
 
-body{
+body {
+  height: 100%;
   margin:0;
   background:#1f1f1f;
   color:#fff;
-  font-family:Inter,system-ui,sans-serif;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
 .app{
@@ -81,18 +82,23 @@ body{
   display:flex;
   justify-content:center;
   align-items:center;
-  padding:32px;
+  box-sizing: border-box;
 }
 
 .layout{
   width:100%;
   max-width:1300px;
+  min-height: calc(100vh - 40px);
+  
   display:grid;
-  grid-template-columns:minmax(520px,720px) 300px 300px;
+  grid-template-columns: minmax(520px,720px) 300px;
+  justify-content: center;
+  align-content: center;
   gap:28px;
 }
 
 .board-panel{
+  height: 100%;
   background:#262626;
   border:1px solid #333;
   border-radius:18px;
@@ -101,6 +107,7 @@ body{
 }
 
 .card{
+  widtch: 100%
   background:#262626;
   border:1px solid #333;
   border-radius:18px;
@@ -122,7 +129,7 @@ body{
 
   border-radius: 8px;
 
-  color:rgb(255, 255, 255);
+  color:#9aa0a6;
   font-size: 30px;
   font-weight: 700;
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -134,13 +141,13 @@ body{
   align-items: center;
   justify-content: center;
 
-  height: 50px;
+  height: 30px;
   min-width: 80px;
   padding: 0 12px;
 
   border-radius: 8px;
 
-  color:rgb(255, 255, 255);
+  color: white;
   font-size: 25px;
   font-weight: 800;
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -152,13 +159,13 @@ body{
   align-items: center;
   justify-content: center;
 
-  height: 50px;
+  height: 30px;
   min-width: 80px;
   padding: 0 12px;
 
   border-radius: 8px;
 
-  color:rgb(237, 237, 237);
+  color:#9aa0a6;
   font-size: 15px;
   font-weight: 500;
   font-style: italic;
@@ -192,43 +199,10 @@ body{
   min-height:56px;
 }
 
-.buttons{
-  display:flex;
-  flex-direction:column;
-  gap:10px;
-}
 
-button{
-  border:none;
-  border-radius:12px;
-  padding:12px;
-  cursor:pointer;
-  font-size:15px;
-  font-weight:600;
-}
-
-.primary{
-  background:#7fa650;
-  color:white;
-}
-
-.secondary{
-  background:#404040;
-  color:white;
-}
-
-.danger{
-  background:#934242;
-  color:white;
-}
 
 .success{
   color:#72df7b;
-}
-
-.next {
-  background: #d08a00;
-  color:white;
 }
 
 .puzzle-tracker {
@@ -335,10 +309,74 @@ button{
 
   user-select: none;
 }
+.action-buttons{
+  margin-top:auto;
+  display:flex;
+  justify-content:flex-end;
+  gap:3px;
+  padding-top:12px;
+}
 
-@media(max-width:950px){
-  .layout{
-    grid-template-columns:1fr;
+.icon-btn{
+  width:30px;
+  height:30px;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  background: inherit;
+  border:none;
+  border-radius:0px;
+
+  color:#9aa0a6;
+  font-size:25px;
+  font-weight:300;
+
+  cursor:pointer;
+  transition:all .15s ease;
+}
+.status-row{
+  display:flex;
+  align-items:center;
+  justify-content: center;
+  gap:0px;
+}
+
+.side-indicator{
+  width:20px;
+  height:20px;
+  border-radius:0px;
+  border: 1px solid rgb(255, 243, 77);
+  flex-shrink:0;
+}
+
+.side-indicator.white{
+  background:#ffffff;
+}
+
+.side-indicator.black{
+  background:#111111;
+}
+
+.icon-btn:hover{
+  color:#ffffff;
+}
+
+.icon-btn:active{
+  transform:scale(0.96);
+}
+@media (max-width: 900px) {
+  .layout {
+    min-height: auto;
+    grid-template-columns: 1fr;
+    justify-items: center;
+  }
+
+  .board-panel,
+  .card {
+    width: 100%;
+    max-width: 720px;
   }
 }
 `;
@@ -352,22 +390,32 @@ app.innerHTML = `
       <div id="board"></div>
     </div>
 
-    <div class="card">
-
-      <div class="title" id="puzzleTitle"></div>
-      <div class="subtitle" id="statusText">In Progress</div>
-      <div class="messageBox" id="messageBox">Loading puzzle...</div>
-      <div class="buttons">
-        <button id="hintBtn" class="primary">Hint</button>
-        <button id="nextBtn" class="next">Next</button>
-      </div>
-    </div>
     <div class = "card">
+      <div class="status-row">
+        <div id="sideIndicator" class="side-indicator"></div>
+        <div class="subtitle" id="statusText">In Progress</div>
+      </div>
+      <div class="messageBox" id="messageBox">Loading puzzle...</div>
       <div class="timer" id="timer">00:00</div>
+
       <div class="puzzleCounter" id="puzzleCounter"> 1 </div>
+
       <div class = "trackerInfo">
         <div id="puzzleTracker" class="puzzle-tracker"></div>
       </div>
+
+      <div class="title" id="puzzleTitle">...</div>
+
+      <div class="action-buttons">
+        <button id="hintBtn" class="icon-btn" title="Hint">
+          <span>⌕</span>
+        </button>
+
+        <button id="nextBtn" class="icon-btn" title="Next Puzzle">
+          <span>›</span>
+        </button>
+      </div>
+
     </div>
 
   </div>
@@ -376,6 +424,7 @@ app.innerHTML = `
 
 const boardContainer = document.getElementById("board");
 const statusText = document.getElementById("statusText");
+const sideIndicator = document.getElementById("sideIndicator");
 const messageBox = document.getElementById("messageBox");
 const puzzleCounter = document.getElementById("puzzleCounter");
 const puzzleTitle = document.getElementById("puzzleTitle");
@@ -444,15 +493,20 @@ function setMessage(text) {
 }
 
 function updateUI() {
-  puzzleTitle.textContent = PUZZLE.title;
+  // puzzleTitle.textContent = PUZZLE.title;
 
   if (solved) {
     statusText.innerHTML =
       '<span class="success">Puzzle Solved ✓</span>';
     return;
   }
-  if (PUZZLE.sideToMove === "w") statusText.textContent = "White to Move";
-  else statusText.textContent = "Black to Move";
+  if (PUZZLE.sideToMove === "w") {
+    statusText.textContent = "White to Move";
+    sideIndicator.className = "side-indicator white";
+  } else {
+    statusText.textContent = "Black to Move";
+    sideIndicator.className = "side-indicator black";
+  }
 }
 
 async function playAutomaticMove(move) {
