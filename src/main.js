@@ -102,7 +102,7 @@ body {
   min-height: calc(100vh - 40px);
   
   display:grid;
-  grid-template-columns: minmax(520px,720px) 300px;
+  grid-template-columns: 50px minmax(520px,720px) 300px;
   justify-content: center;
   align-content: center;
   gap:28px;
@@ -110,10 +110,10 @@ body {
 
 .board-panel{
   height: 100%;
-  background:#262626;
-  border:1px solid #333;
-  border-radius:18px;
-  padding:18px;
+  background: #1f1f1f;
+  border:0px solid #333;
+  border-radius: 0px;
+  padding:10px;
   box-shadow:0 10px 40px rgba(0,0,0,.35);
 }
 
@@ -121,12 +121,21 @@ body {
   width: 100%
   background:#262626;
   border:1px solid #333;
-  border-radius:18px;
-  padding:24px;
+  border-radius:10px;
+  padding:20px;
   display:flex;
   flex-direction:column;
   gap:16px;
   box-shadow:0 10px 40px rgba(0,0,0,.35);
+}
+
+.card2{
+  width: 100%
+  background:#262626;
+  padding:20px 0 0 0;
+  display:flex;
+  flex-direction:column;
+  gap:6px;
 }
 
 .title{
@@ -147,6 +156,7 @@ body {
 
   user-select: none;
 }
+
 .subtitle{
   display: flex;
   align-items: center;
@@ -209,8 +219,6 @@ body {
   padding:12px;
   min-height:56px;
 }
-
-
 
 .success{
   color:#72df7b;
@@ -279,7 +287,7 @@ body {
   flex: 1;
   min-height: 0;
   background:#2f2f2f;
-  border-radius:12px;
+  border-radius:4px;
   padding:12px;
 }
 .puzzleCounter {
@@ -288,14 +296,11 @@ body {
   justify-content: center;
 
   min-width: 48px;
-  height: 100px;
-  padding: 0 50px;
+  height: 50px;
+  padding: 0 20px;
 
-  background: #2f2f2f;
-  border-radius: 12px;
-
-  color: #f0d9b5;
-  font-size: 50px;
+  color: #D4DFE5;
+  font-size: 40px;
   font-weight: 1000;
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   user-select: none;
@@ -305,15 +310,15 @@ body {
   align-items: center;
   justify-content: center;
 
-  height: 50px;
+  height: 40px;
   min-width: 80px;
   padding: 0 12px;
 
   background: #2f2f2f;
   border: 1px solid #3d3b38;
-  border-radius: 8px;
+  border-radius: 4px;
 
-  color: #f0d9b5;
+  color: #D4DFE5;
   font-size: 16px;
   font-weight: 700;
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -559,26 +564,25 @@ const pauseScreen = document.getElementById("pauseScreen");
 puzzleScreen.innerHTML = `
 <div class="app">
   <div class="layout">
-
+    <div class = "card2">
+      <div class="puzzleCounter" id="puzzleCounter"> 1 </div>
+    </div>
     <div class="board-panel">
       <div id="board"></div>
     </div>
-
+    
     <div class = "card">
       <div class="status-row">
         <div id="sideIndicator" class="side-indicator"></div>
         <div class="subtitle" id="statusText">In Progress</div>
       </div>
       <div class="messageBox" id="messageBox">Loading puzzle...</div>
-      <div class="timer" id="timer">00:00</div>
-      <div class="puzzleCounter" id="puzzleCounter"> 1 </div>
 
       <div class = "trackerInfo">
         <div id="puzzleTracker" class="puzzle-tracker"></div>
       </div>
-
+      <div class="timer" id="timer">00:00</div>
       <div class="title" id="puzzleTitle">...</div>
-
       <div class="action-buttons">
         <button id="pauseBtn" class="icon-btn" title="Hint">
           <span>⏸</span>
@@ -920,8 +924,8 @@ board = new SimpleChessBoard({
   container: boardContainer,
   style: {
     board: {
-        color1: '#f0d9b5',
-        color2: '#b58863'
+        color1: '#D4DFE5',
+        color2: '#799CB1'
     }
   },
   position: PUZZLE.fen,
