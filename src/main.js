@@ -554,6 +554,7 @@ document.head.appendChild(style);
 
 const puzzleScreen = document.getElementById("puzzleScreen");
 const summaryScreen = document.getElementById("summaryScreen");
+const pauseScreen = document.getElementById("pauseScreen");
 
 puzzleScreen.innerHTML = `
 <div class="app">
@@ -570,7 +571,6 @@ puzzleScreen.innerHTML = `
       </div>
       <div class="messageBox" id="messageBox">Loading puzzle...</div>
       <div class="timer" id="timer">00:00</div>
-
       <div class="puzzleCounter" id="puzzleCounter"> 1 </div>
 
       <div class = "trackerInfo">
@@ -580,10 +580,9 @@ puzzleScreen.innerHTML = `
       <div class="title" id="puzzleTitle">...</div>
 
       <div class="action-buttons">
-        <button id="restartBtn2" class="icon-btn" title="Restart Puzzles">
-          <span>↻</span>
+        <button id="pauseBtn" class="icon-btn" title="Hint">
+          <span>⏸</span>
         </button>
-
         <button id="hintBtn" class="icon-btn" title="Hint">
           <span>✦</span>
         </button>
@@ -637,6 +636,50 @@ summaryScreen.innerHTML = `
 </div>
 `;
 
+pauseScreen.innerHTML = `
+<div class = "summary-app">
+  <div class="summary-screen">
+
+    <div class="summary-header">
+      <h1>Session Statistics</h1>
+    </div>
+
+    <div class="summary-stats">
+
+      <div class="stat-card primary">
+        <div class="stat-label">Total Time</div>
+        <div class="stat-value" id = "pauseTimeTaken">12m 47s</div>
+      </div>
+
+      <div class="stat-card success">
+        <div class="stat-label">Correct</div>
+        <div class="stat-value" id = "pauseCorrect">42</div>
+      </div>
+
+      <div class="stat-card danger">
+        <div class="stat-label">Incorrect</div>
+        <div class="stat-value" id = "pauseIncorrect">8</div>
+      </div>
+
+      <div class="stat-card amber">
+        <div class="stat-label">Skipped</div>
+        <div class="stat-value" id = "pauseSkipped">8</div>
+      </div>
+
+    </div>
+
+    <button id="startBtn" class="restart-btn">
+      Continue Training
+    </button>
+
+    <button id="restartBtn2" class="restart-btn">
+      Restart Training
+    </button>
+
+  </div>
+</div>
+`;
+
 const boardContainer = document.getElementById("board");
 const statusText = document.getElementById("statusText");
 const sideIndicator = document.getElementById("sideIndicator");
@@ -647,6 +690,12 @@ const statTimeTaken = document.getElementById("statTimeTaken");
 const statCorrect = document.getElementById("statCorrect");
 const statIncorrect = document.getElementById("statIncorrect");
 const statSkipped = document.getElementById("statSkipped");
+
+const pauseTimeTaken = document.getElementById("pauseTimeTaken");
+const pauseCorrect = document.getElementById("pauseCorrect");
+const pauseIncorrect = document.getElementById("pauseIncorrect");
+const pauseSkipped = document.getElementById("pauseSkipped");
+
 const timerEl = document.getElementById("timer");
 
 
@@ -869,6 +918,12 @@ async function replaySolution() {
 
 board = new SimpleChessBoard({
   container: boardContainer,
+  style: {
+    board: {
+        color1: '#f0d9b5',
+        color2: '#b58863'
+    }
+  },
   position: PUZZLE.fen,
   playerColor: PUZZLE.sideToMove,
   orientation: "w",
@@ -914,6 +969,23 @@ board.on("move:end", async ({ move }) => {
 
   await advancePuzzle();
 });
+function pausePuzzleTrainer () {
+  ignoreMoveEvents = true;
+  let timeTaken = stopTimer();
+  pauseTimeTaken.textContent = timeTaken;
+  pauseCorrect.textContent = trackerData.filter(item => item.status === "correct").length;
+  pauseIncorrect.textContent = trackerData.filter(item => item.status === "wrong").length;
+  pauseSkipped.textContent = trackerData.filter(item => item.status === "skipped").length;
+  puzzleScreen.classList.remove("active");
+  pauseScreen.classList.add("active");
+}
+
+function resumePuzzleTrainer () {
+  ignoreMoveEvents = false;
+  puzzleScreen.classList.add("active");
+  pauseScreen.classList.remove("active");
+  startTimer();
+}
 
 document
   .getElementById("hintBtn")
@@ -923,46 +995,54 @@ document
   .getElementById("nextBtn")
   .addEventListener("click", skipPuzzle);
 
-  document
+document
   .getElementById("restartBtn")
   .addEventListener("click", restartPuzzleTrainer);
 
   document
   .getElementById("restartBtn2")
   .addEventListener("click", restartPuzzleTrainer);
-  
-  function renderPuzzleTracker() {
-    const container = document.getElementById("puzzleTracker");
-  
-    container.innerHTML = trackerData
-      .map((item) => {
-        const status = item.status; // "correct" | "wrong" | "skipped"
-  
-        return `
-          <div class="tracker-item ${status}">
-            <div class="tracker-icon">
-              ${
-                status === "correct"
-                  ? "✓"
-                  : status === "wrong"
-                  ? "✕"
-                  : "−"
-              }
-            </div>
-            <div class="tracker-rating">${item.rating}</div>
-          </div>
-        `;
-      })
-      .join("");
-  }
 
-  function skipPuzzle() {
-    if (mistakes >= 0) trackerData.push({ rating: puzzles[puzzleCount].Rating, status: "wrong" });
-    else trackerData.push({ rating: puzzles[puzzleCount].Rating, status: "skipped" });
-    renderPuzzleTracker();
-    puzzleCount++;
-    resetPuzzle();
-  }
+document
+  .getElementById("pauseBtn")
+  .addEventListener("click", pausePuzzleTrainer);
+
+  document
+  .getElementById("startBtn")
+  .addEventListener("click", resumePuzzleTrainer);
+  
+function renderPuzzleTracker() {
+  const container = document.getElementById("puzzleTracker");
+
+  container.innerHTML = trackerData
+    .map((item) => {
+      const status = item.status; // "correct" | "wrong" | "skipped"
+
+      return `
+        <div class="tracker-item ${status}">
+          <div class="tracker-icon">
+            ${
+              status === "correct"
+                ? "✓"
+                : status === "wrong"
+                ? "✕"
+                : "−"
+            }
+          </div>
+          <div class="tracker-rating">${item.rating}</div>
+        </div>
+      `;
+    })
+    .join("");
+}
+
+function skipPuzzle() {
+  if (mistakes > 0) trackerData.push({ rating: puzzles[puzzleCount].Rating, status: "wrong" });
+  else trackerData.push({ rating: puzzles[puzzleCount].Rating, status: "skipped" });
+  renderPuzzleTracker();
+  puzzleCount++;
+  resetPuzzle();
+}
 
   function nextPuzzle() {
     if (mistakes === 0 && tookHint == 0) trackerData.push({ rating: puzzles[puzzleCount].Rating, status: "correct" });
@@ -1025,6 +1105,7 @@ function restartPuzzleTrainer() {
   puzzleTitle.textContent = "...";
 
   summaryScreen.classList.remove("active");
+  pauseScreen.classList.remove("active");
   puzzleScreen.classList.add("active");
 
   resetTimer();
