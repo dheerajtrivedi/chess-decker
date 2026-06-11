@@ -265,6 +265,26 @@ button{
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   user-select: none;
 }
+.timer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  height: 50px;
+  min-width: 80px;
+  padding: 0 12px;
+
+  background: #2f2f2f;
+  border: 1px solid #3d3b38;
+  border-radius: 8px;
+
+  color: #f0d9b5;
+  font-size: 16px;
+  font-weight: 700;
+  font-family: system-ui, sans-serif;
+
+  user-select: none;
+}
 
 @media(max-width:950px){
   .layout{
@@ -313,6 +333,7 @@ app.innerHTML = `
       </div>
     </div>
     <div class = "card">
+      <div class="timer" id="timer">00:00</div>
       <div class="puzzleCounter" id="puzzleCounter"> 1 </div>
       <div class = "trackerInfo">
         <div id="puzzleTracker" class="puzzle-tracker"></div>
@@ -463,6 +484,15 @@ function loadCurrentPuzzle() {
 async function resetPuzzle() {
   solved = false;
   currentStep = 0;
+  if (puzzleCount >= puzzles.length) {
+    let timeTaken = stopTimer();
+    setMessage(`Solved in ${timeTaken}`);
+    board.flipBoard('w');
+    board.setPosition("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+    puzzleCounter.textContent = "!!";
+    puzzleTitle.textContent = "COMPLETED!";
+    return;
+  }
   loadCurrentPuzzle();
   board.flipBoard('w')
   board.setPosition(PUZZLE.fen);
@@ -650,4 +680,45 @@ document
   // trackerData[0].solved = true;
   // renderPuzzleTracker(trackerData);
 
+let timerInterval = null;
+let elapsedSeconds = 0;
+
+const timerEl = document.getElementById("timer");
+
+function updateTimerDisplay() {
+  const minutes = Math.floor(elapsedSeconds / 60);
+  const seconds = elapsedSeconds % 60;
+
+  timerEl.textContent =
+    `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+}
+
+function startTimer() {
+  if (timerInterval) return;
+
+  timerInterval = setInterval(() => {
+    elapsedSeconds++;
+    updateTimerDisplay();
+  }, 1000);
+}
+
+function stopTimer() {
+  clearInterval(timerInterval);
+  timerInterval = null;
+
+  const minutes = Math.floor(elapsedSeconds / 60);
+  const seconds = elapsedSeconds % 60;
+
+  return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+}
+
+function resetTimer() {
+  stopTimer();
+  elapsedSeconds = 0;
+  updateTimerDisplay();
+}
+  
+updateTimerDisplay();
+
 resetPuzzle();
+startTimer()
