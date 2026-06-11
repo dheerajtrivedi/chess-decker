@@ -129,7 +129,43 @@ body{
 
   user-select: none;
 }
+.subtitle{
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
+  height: 50px;
+  min-width: 80px;
+  padding: 0 12px;
+
+  border-radius: 8px;
+
+  color:rgb(255, 255, 255);
+  font-size: 25px;
+  font-weight: 800;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+
+  user-select: none;
+}
+.messageBox{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  height: 50px;
+  min-width: 80px;
+  padding: 0 12px;
+
+  border-radius: 8px;
+
+  color:rgb(237, 237, 237);
+  font-size: 15px;
+  font-weight: 500;
+  font-style: italic;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+
+  user-select: none;
+}
 .info{
   background:#2f2f2f;
   border-radius:12px;
@@ -319,25 +355,10 @@ app.innerHTML = `
     <div class="card">
 
       <div class="title" id="puzzleTitle"></div>
-
-      <div class="info">
-        <div class="label">Status</div>
-        <div class="value" id="statusText">In Progress</div>
-      </div>
-
-      <div class="info">
-        <div class="label">Mistakes</div>
-        <div class="value" id="mistakesText">0</div>
-      </div>
-
-      <div class="status" id="messageBox">
-        Loading puzzle...
-      </div>
-
+      <div class="subtitle" id="statusText">In Progress</div>
+      <div class="messageBox" id="messageBox">Loading puzzle...</div>
       <div class="buttons">
         <button id="hintBtn" class="primary">Hint</button>
-        <button id="resetBtn" class="secondary">Reset</button>
-        <button id="solutionBtn" class="danger">Show Solution</button>
         <button id="nextBtn" class="next">Next</button>
       </div>
     </div>
@@ -355,7 +376,6 @@ app.innerHTML = `
 
 const boardContainer = document.getElementById("board");
 const statusText = document.getElementById("statusText");
-const mistakesText = document.getElementById("mistakesText");
 const messageBox = document.getElementById("messageBox");
 const puzzleCounter = document.getElementById("puzzleCounter");
 const puzzleTitle = document.getElementById("puzzleTitle");
@@ -424,7 +444,6 @@ function setMessage(text) {
 }
 
 function updateUI() {
-  mistakesText.textContent = mistakes;
   puzzleTitle.textContent = PUZZLE.title;
 
   if (solved) {
@@ -432,7 +451,8 @@ function updateUI() {
       '<span class="success">Puzzle Solved ✓</span>';
     return;
   }
-  statusText.textContent = "In Progress";
+  if (PUZZLE.sideToMove === "w") statusText.textContent = "White to Move";
+  else statusText.textContent = "Black to Move";
 }
 
 async function playAutomaticMove(move) {
@@ -484,6 +504,7 @@ function loadCurrentPuzzle() {
 async function resetPuzzle() {
   solved = false;
   currentStep = 0;
+  mistakes = 0;
   if (puzzleCount >= puzzles.length) {
     let timeTaken = stopTimer();
     setMessage(`Solved in ${timeTaken}`);
@@ -617,16 +638,6 @@ document
   .addEventListener("click", showHint);
 
 document
-  .getElementById("resetBtn")
-  .addEventListener("click", async () => {
-    mistakes = 0;
-    await resetPuzzle();
-  });
-
-document
-  .getElementById("solutionBtn")
-  .addEventListener("click", replaySolution);
-  document
   .getElementById("nextBtn")
   .addEventListener("click", skipPuzzle);
 
@@ -664,7 +675,8 @@ document
     resetPuzzle();
   }
   function nextPuzzle() {
-    trackerData.push({ rating: puzzles[puzzleCount].Rating, status: "correct" });
+    if (mistakes === 0) trackerData.push({ rating: puzzles[puzzleCount].Rating, status: "correct" });
+    else trackerData.push({ rating: puzzles[puzzleCount].Rating, status: "wrong" });
     renderPuzzleTracker(trackerData);
     puzzleCount++;
     resetPuzzle();
