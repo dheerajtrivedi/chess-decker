@@ -1,6 +1,7 @@
 // src/main.js
 
 import { SimpleChessBoard } from "@0dexz0/simple-chess-board";
+import initSqlJs from "sql.js";
 import * as XLSX from "xlsx";
 
 let PUZZLE = {
@@ -739,6 +740,182 @@ body {
     grid-template-columns:1fr;
   }
 }
+
+.modal-overlay{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.72);
+  backdrop-filter:blur(12px);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  z-index:9999;
+}
+
+.create-set-card{
+  width:520px;
+  background:#05060a;
+  border:1px solid #1f2230;
+  border-radius:28px;
+  padding:28px;
+  display:flex;
+  flex-direction:column;
+  gap:28px;
+  box-shadow:
+    0 30px 80px rgba(0,0,0,.5);
+}
+
+.modal-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+.modal-header h2{
+  margin:0;
+  color:#fff;
+  font-size:28px;
+  font-weight:700;
+  letter-spacing:-0.03em;
+}
+
+.close-btn{
+  width:40px;
+  height:40px;
+  border:none;
+  border-radius:12px;
+  background:#10131c;
+  color:#9ea3b3;
+  cursor:pointer;
+}
+
+.set-name-input{
+  background:transparent;
+  border:none;
+  border-bottom:1px solid #1f2230;
+  padding:10px 0;
+  font-size:22px;
+  color:white;
+  outline:none;
+}
+
+.slider-section{
+  display:flex;
+  flex-direction:column;
+  gap:28px;
+}
+
+.slider-row{
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+}
+
+.label{
+  color:#7b8090;
+  font-size:13px;
+  text-transform:uppercase;
+  letter-spacing:.08em;
+}
+
+.value{
+  color:white;
+  font-size:24px;
+  font-weight:700;
+}
+
+input[type="range"]{
+  width:100%;
+  accent-color:#6aa7ff;
+}
+
+.range-slider{
+  position:relative;
+  height:22px;
+  margin-top:10px;
+}
+
+.range-slider::before{
+  content:"";
+  position:absolute;
+  left:0;
+  right:0;
+  top:50%;
+  transform:translateY(-50%);
+  height:4px;
+  background:#232632;
+  border-radius:999px;
+}
+
+.range-slider input{
+  position:absolute;
+  inset:0;
+  width:100%;
+  background:none;
+  appearance:none;
+  -webkit-appearance:none;
+  pointer-events:none;
+}
+
+.range-slider input::-webkit-slider-runnable-track{
+  height:4px;
+  background:transparent;
+}
+
+.range-slider input::-moz-range-track{
+  height:4px;
+  background:transparent;
+}
+
+.range-slider input::-webkit-slider-thumb{
+  appearance:none;
+  -webkit-appearance:none;
+  width:16px;
+  height:16px;
+  border-radius:50%;
+  background:#6aa7ff;
+  border:none;
+  pointer-events:auto;
+  cursor:pointer;
+  margin-top:-6px;
+}
+
+.range-slider input::-moz-range-thumb{
+  width:16px;
+  height:16px;
+  border:none;
+  border-radius:50%;
+  background:#6aa7ff;
+  pointer-events:auto;
+  cursor:pointer;
+}
+
+.found-pill{
+  align-self:flex-start;
+  padding:10px 14px;
+  border-radius:999px;
+  background:#10131c;
+  color:#8e94a6;
+  font-size:13px;
+}
+
+.create-btn{
+  align-self:flex-end;
+  border:none;
+  border-radius:18px;
+  padding:16px 24px;
+  background:#f4f4f5;
+  color:#05060a;
+  font-size:18px;
+  font-weight:700;
+  cursor:pointer;
+  transition:.15s;
+}
+
+.create-btn:hover{
+  transform:translateY(-1px);
+}
+
 `;
 document.head.appendChild(style);
 
@@ -882,9 +1059,10 @@ dashboardScreen.innerHTML = `
       </p>
     </div>
 
-    <button class="dashboard-primary-btn" onclick="createPuzzleSet()">
+    <button class="dashboard-primary-btn" id="createSetBtn">
       Create Puzzle Set
     </button>
+    <div id="modalRoot"></div>
   </div>
   <div id="puzzleSetGrid" class="puzzle-set-grid"></div>
 
@@ -936,67 +1114,422 @@ async function startPuzzleSet(setID) {
   return;
 }
 
-async function createPuzzleSet(fileName) {
+let db;
 
-  const response = await fetch(fileName);
+async function initPuzzleDB() {
+  const SQL = await initSqlJs({
+    locateFile: () => "/sql-wasm.wasm"
+  });
+
+  const response = await fetch("/lichess-puzzles.db");
+  const buffer = await response.arrayBuffer();
+
+  db = new SQL.Database(new Uint8Array(buffer));
+}
+
+await initPuzzleDB();
+
+
+document
+  .getElementById("createSetBtn")
+  .addEventListener("click", openPuzzleSetModal);
+
+  async function openPuzzleSetModal() {
+
+    const ratingInfo = db.exec(`
+      SELECT
+        MIN(Rating),
+        MAX(Rating)
+      FROM puzzles
+    `)[0];
+  
+    const minRating = Number(ratingInfo.values[0][0]);
+    const maxRating = Number(ratingInfo.values[0][1]);
+  
+    document.getElementById("modalRoot").innerHTML = `
+      <div class="modal-overlay">
+  
+        <div class="create-set-card">
+  
+          <div class="modal-header">
+            <h2>Create Puzzle Set</h2>
+            <button id="cancelCreate" class="close-btn">
+              ✕
+            </button>
+          </div>
+  
+          <input
+            id="setName"
+            class="set-name-input"
+            placeholder="Set name"
+          />
+  
+          <div class="slider-section">
+  
+            <div class="slider-row">
+              <div>
+                <div class="label">
+                  Puzzles
+                </div>
+  
+                <div
+                  class="value"
+                  id="countValue"
+                >
+                  100
+                </div>
+              </div>
+  
+              <input
+                id="puzzleCount"
+                type="range"
+                min="10"
+                max="1000"
+                value="100"
+              />
+            </div>
+  
+            <div class="slider-row">
+  
+              <div>
+                <div class="label">
+                  Rating
+                </div>
+  
+                <div
+                  class="value"
+                  id="ratingValue"
+                >
+                  ${minRating} – ${maxRating}
+                </div>
+              </div>
+  
+              <div class="range-slider">
+                <input
+                  id="minRating"
+                  type="range"
+                  min="${minRating}"
+                  max="${maxRating}"
+                  value="${minRating}"
+                  step="50"
+                />
+  
+                <input
+                  id="maxRating"
+                  type="range"
+                  min="${minRating}"
+                  max="${maxRating}"
+                  value="${maxRating}"
+                  step="50"
+                />
+              </div>
+  
+            </div>
+  
+          </div>
+  
+          <div
+            id="foundCount"
+            class="found-pill"
+          >
+            Calculating...
+          </div>
+  
+          <button
+            id="confirmCreate"
+            class="create-btn"
+          >
+            Create Set
+          </button>
+  
+        </div>
+  
+      </div>
+    `;
+  
+    const countSlider =
+      document.getElementById("puzzleCount");
+  
+    const minSlider =
+      document.getElementById("minRating");
+  
+    const maxSlider =
+      document.getElementById("maxRating");
+  
+    function updateCount() {
+  
+      let min = Number(minSlider.value);
+      let max = Number(maxSlider.value);
+  
+      if (min > max) {
+        [min, max] = [max, min];
+      }
+  
+      document.getElementById(
+        "countValue"
+      ).textContent = countSlider.value;
+  
+      document.getElementById(
+        "ratingValue"
+      ).textContent = `${min} – ${max}`;
+  
+      const result = db.exec(`
+        SELECT COUNT(*)
+        FROM puzzles
+        WHERE Rating BETWEEN
+          ${min}
+          AND
+          ${max}
+      `);
+  
+      const total = result[0].values[0][0];
+  
+      document.getElementById(
+        "foundCount"
+      ).textContent =
+        `${total.toLocaleString()} puzzles found`;
+    }
+  
+    countSlider.addEventListener(
+      "input",
+      updateCount
+    );
+  
+    minSlider.addEventListener(
+      "input",
+      updateCount
+    );
+  
+    maxSlider.addEventListener(
+      "input",
+      updateCount
+    );
+  
+    updateCount();
+  
+    document
+      .getElementById("cancelCreate")
+      .addEventListener("click", () => {
+        document.getElementById(
+          "modalRoot"
+        ).innerHTML = "";
+      });
+  
+    document
+      .getElementById("confirmCreate")
+      .addEventListener(
+        "click",
+        createPuzzleSet
+      );
+  }
+  
+  // ------------------------
+  // CREATE SET
+  // ------------------------
+  async function createPuzzleSet() {
+
+    const name =
+      document.getElementById("setName").value.trim();
+  
+    if (!name) {
+      alert("Enter a set name");
+      return;
+    }
+  
+    const count =
+      Number(document.getElementById("puzzleCount").value);
+  
+    const minRating =
+      Number(document.getElementById("minRating").value);
+  
+    const maxRating =
+      Number(document.getElementById("maxRating").value);
+  
+    const result = db.exec(`
+      SELECT *
+      FROM puzzles
+      WHERE Rating BETWEEN
+        ${minRating}
+        AND
+        ${maxRating}
+      ORDER BY RANDOM()
+      LIMIT ${count}
+    `);
+  
+    if (!result.length) {
+      alert("No puzzles found");
+      return;
+    }
+  
+    const cols = result[0].columns;
+    const rows = result[0].values;
+  
+    const puzzles = rows.map(row => {
+      const obj = {};
+  
+      cols.forEach((col, i) => {
+        obj[col] = row[i];
+      });
+  
+      return obj;
+    });
+  
+    // -------------------------
+    // Store puzzle data
+    // -------------------------
+  
+    const storageKey = `puzzles_${name}`;
+  
+    localStorage.setItem(
+      storageKey,
+      JSON.stringify(puzzles)
+    );
+  
+    // -------------------------
+    // Calculate metadata
+    // -------------------------
+  
+    const averageRating = Math.round(
+      puzzles.reduce(
+        (sum, p) => sum + Number(p.Rating || 0),
+        0
+      ) / puzzles.length
+    );
+  
+    const newSet = {
+      SetId: name,
+      AverageRating: averageRating,
+      NumberPuzzle: puzzles.length,
+  
+      lastSolveTime: null,
+      bestTime: null,
+      lastSolveDate: null,
+  
+      averageAccuracy: null,
+  
+      accuracyArray: [],
+      solveTimeArray: []
+    };
+  
+    // -------------------------
+    // Update puzzleSets
+    // -------------------------
+  
+    const puzzleSets =
+      JSON.parse(
+        localStorage.getItem("puzzleSets")
+      ) || [];
+  
+    const existingIndex =
+      puzzleSets.findIndex(
+        s => s.SetId === name
+      );
+  
+    if (existingIndex >= 0) {
+      puzzleSets[existingIndex] = {
+        ...puzzleSets[existingIndex],
+        ...newSet
+      };
+    } else {
+      puzzleSets.push(newSet);
+    }
+  
+    localStorage.setItem(
+      "puzzleSets",
+      JSON.stringify(puzzleSets)
+    );
+  
+    document.getElementById("modalRoot").innerHTML = "";
+  
+    if (typeof loadPuzzleSets === "function") {
+      loadPuzzleSets();
+    }
+  }
+
+// async function createPuzzleSet(fileName) {
+
+//   const response = await fetch(fileName);
+//   const arrayBuffer = await response.arrayBuffer();
+
+//   const workbook = XLSX.read(arrayBuffer, { type: "array" });
+//   const sheet = workbook.Sheets[workbook.SheetNames[0]];
+//   const puzzles = XLSX.utils.sheet_to_json(sheet);
+
+//   const setId = fileName
+//     .split("/")
+//     .pop()
+//     .replace(".xlsx", "");
+
+//   const averageRating = Math.round(
+//     puzzles.reduce((sum, p) => sum + Number(p.Rating || 0), 0) /
+//     puzzles.length
+//   );
+
+  // const newSet = {
+  //   SetId: setId,
+  //   AverageRating: averageRating,
+  //   NumberPuzzle: puzzles.length,
+  //   lastSolveTime: null,
+  //   bestTime: null,
+  //   lastSolveDate: null,
+  //   averageAccuracy: null,
+  //   accuracyArray: [],
+  //   solveTimeArray: []
+  // };
+
+//   const puzzleSets =
+//     JSON.parse(localStorage.getItem("puzzleSets")) || [];
+
+//   const existingIndex =
+//     puzzleSets.findIndex(s => s.SetId === setId);
+
+//   if (existingIndex >= 0) {
+//     puzzleSets[existingIndex] = newSet;
+//   } else {
+//     puzzleSets.push(newSet);
+//   }
+
+//   localStorage.setItem(
+//     "puzzleSets",
+//     JSON.stringify(puzzleSets)
+//   );
+
+//   return newSet;
+// }
+
+// async function loadPuzzles(setID) {
+//   const response = await fetch("src/" + setID + ".xlsx");
+//   const arrayBuffer = await response.arrayBuffer();
+
+//   const workbook = XLSX.read(arrayBuffer, { type: "array" });
+
+//   const sheetName = workbook.SheetNames[0];
+//   const sheet = workbook.Sheets[sheetName];
+
+//   const rows = XLSX.utils.sheet_to_json(sheet);
+
+//   return rows;
+// }
+
+async function loadPuzzles(setID) {
+  const storageKey = `puzzles_${setID}`;
+
+  // Check localStorage first
+  const cached = localStorage.getItem(storageKey);
+  if (cached) {
+    return JSON.parse(cached);
+  }
+
+  // Load Excel if not cached
+  const response = await fetch(`src/${setID}.xlsx`);
   const arrayBuffer = await response.arrayBuffer();
 
   const workbook = XLSX.read(arrayBuffer, { type: "array" });
   const sheet = workbook.Sheets[workbook.SheetNames[0]];
-  const puzzles = XLSX.utils.sheet_to_json(sheet);
-
-  const setId = fileName
-    .split("/")
-    .pop()
-    .replace(".xlsx", "");
-
-  const averageRating = Math.round(
-    puzzles.reduce((sum, p) => sum + Number(p.Rating || 0), 0) /
-    puzzles.length
-  );
-
-  const newSet = {
-    SetId: setId,
-    AverageRating: averageRating,
-    NumberPuzzle: puzzles.length,
-    lastSolveTime: null,
-    bestTime: null,
-    lastSolveDate: null,
-    averageAccuracy: null,
-    accuracyArray: [],
-    solveTimeArray: []
-  };
-
-  const puzzleSets =
-    JSON.parse(localStorage.getItem("puzzleSets")) || [];
-
-  const existingIndex =
-    puzzleSets.findIndex(s => s.SetId === setId);
-
-  if (existingIndex >= 0) {
-    puzzleSets[existingIndex] = newSet;
-  } else {
-    puzzleSets.push(newSet);
-  }
-
-  localStorage.setItem(
-    "puzzleSets",
-    JSON.stringify(puzzleSets)
-  );
-
-  return newSet;
-}
-
-async function loadPuzzles(setID) {
-  const response = await fetch("src/" + setID + ".xlsx");
-  const arrayBuffer = await response.arrayBuffer();
-
-  const workbook = XLSX.read(arrayBuffer, { type: "array" });
-
-  const sheetName = workbook.SheetNames[0];
-  const sheet = workbook.Sheets[sheetName];
-
   const rows = XLSX.utils.sheet_to_json(sheet);
+
+  // Save JSON to localStorage
+  localStorage.setItem(storageKey, JSON.stringify(rows));
 
   return rows;
 }
@@ -1473,6 +2006,13 @@ async function loadPuzzleSets() {
   console.log(puzzleSets);
 
   renderPuzzleSetCards();
+  document.querySelectorAll(".start-btn").forEach(btn => {
+
+    btn.addEventListener("click", () => {
+      startPuzzleSet(btn.dataset.setId);
+    });
+  
+  });
 
 }
 
@@ -1618,16 +2158,5 @@ function renderPuzzleSetCards() {
 
 await loadPuzzleSets();
 
-document.querySelectorAll(".start-btn").forEach(btn => {
-
-  btn.addEventListener("click", () => {
-    startPuzzleSet(btn.dataset.setId);
-  });
-
-});
-
 // localStorage.clear();
-// await createPuzzleSet("/src/0000A.xlsx");
-// await createPuzzleSet("/src/0000D.xlsx");
-// await createPuzzleSet("/src/0008Q.xlsx");
 // startPuzzleSet("puzzles");
