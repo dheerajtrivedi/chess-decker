@@ -524,22 +524,19 @@ body {
   overflow-y:auto;
   background:#09090b;
   color:#fafafa;
-  padding:32px;
+  padding:50px 100px;
   box-sizing:border-box;
-}
+
 
 .dashboard-container{
-  max-width:1400px;
   margin:0 auto;
 }
 
 .dashboard-header{
   display:flex;
   justify-content:space-between;
-  align-items:flex-start;
-  gap:24px;
+  align-items: center;
   margin-bottom:28px;
-  flex-wrap:wrap;
 }
 
 .dashboard-title{
@@ -564,11 +561,54 @@ body {
   color:#111111;
   padding:12px 18px;
   font-weight:600;
+  align-self: flex-end;
   transition:all .15s ease;
 }
 
 .dashboard-primary-btn:hover{
   transform:translateY(-1px);
+}
+
+#createSetBtn{
+  position:fixed;
+  bottom:24px;
+  right:24px;
+
+  width:60px;
+  height:60px;
+
+  border:none;
+  border-radius:50%;
+
+  background:#f4f4f5;
+  color:#05060a;
+
+  font-size:32px;
+  font-weight:300;
+  line-height:1;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  cursor:pointer;
+
+  box-shadow:
+    0 8px 24px rgba(0,0,0,.25);
+
+  transition:
+    transform .15s ease,
+    box-shadow .15s ease;
+}
+
+#createSetBtn:hover{
+  transform:translateY(-2px);
+  box-shadow:
+    0 12px 32px rgba(0,0,0,.35);
+}
+
+#createSetBtn:active{
+  transform:translateY(0);
 }
 
 .dashboard-stats-row{
@@ -588,7 +628,7 @@ body {
 .stat-label{
   display:block;
   color:#8b8b92;
-  font-size:.75rem;
+  font-size: .75rem;
   margin-bottom:4px;
 }
 
@@ -707,15 +747,30 @@ body {
 }
 
 .start-btn{
+  width:30px;
+  height:30px;
+
   border:none;
-  background:#fafafa;
-  color:#09090b;
-  border-radius:8px;
-  padding:7px 12px;
-  font-size:.78rem;
-  font-weight:600;
+  border-radius:50%;
+
+  background:#f4f4f5;
+  color:#05060a;
+
+  font-size:0.85rem;
+  font-weight:200;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
   cursor:pointer;
-  transition:all .15s ease;
+
+  box-shadow:
+    0 8px 24px rgba(0,0,0,.25);
+
+  transition:
+    transform .15s ease,
+    box-shadow .15s ease;
 }
 
 .start-btn:hover{
@@ -753,14 +808,14 @@ body {
 }
 
 .create-set-card{
-  width:520px;
+  width:450px;
   background:#05060a;
   border:1px solid #1f2230;
   border-radius:28px;
-  padding:28px;
+  padding:25px 20px;
   display:flex;
   flex-direction:column;
-  gap:28px;
+  gap:20px;
   box-shadow:
     0 30px 80px rgba(0,0,0,.5);
 }
@@ -771,38 +826,49 @@ body {
   align-items:center;
 }
 
+.modal-footer {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
 .modal-header h2{
   margin:0;
   color:#fff;
-  font-size:28px;
+  font-size:20px;
   font-weight:700;
   letter-spacing:-0.03em;
 }
 
 .close-btn{
-  width:40px;
-  height:40px;
+  width:30px;
+  height:30px;
   border:none;
+  background:#05060a;
   border-radius:12px;
-  background:#10131c;
   color:#9ea3b3;
   cursor:pointer;
 }
+
 
 .set-name-input{
   background:transparent;
   border:none;
   border-bottom:1px solid #1f2230;
   padding:10px 0;
-  font-size:22px;
+
   color:white;
   outline:none;
+
+  font-size:.95rem;
+  font-weight:700;
+  color:#fafafa;
 }
 
 .slider-section{
   display:flex;
   flex-direction:column;
-  gap:28px;
+  gap:20px;
 }
 
 .slider-row{
@@ -812,15 +878,15 @@ body {
 }
 
 .label{
-  color:#7b8090;
-  font-size:13px;
+  font-size:.68rem;
+  color:#71717a;
   text-transform:uppercase;
-  letter-spacing:.08em;
+  letter-spacing:.04em;
 }
 
 .value{
   color:white;
-  font-size:24px;
+  font-size:.9rem;
   font-weight:700;
 }
 
@@ -892,28 +958,33 @@ input[type="range"]{
 
 .found-pill{
   align-self:flex-start;
-  padding:10px 14px;
-  border-radius:999px;
-  background:#10131c;
-  color:#8e94a6;
-  font-size:13px;
+  padding:10px 1px;
+
+  background:#05060a;
+  font-size:.68rem;
+  color:#71717a;
+  text-transform:uppercase;
+  letter-spacing:.04em;
 }
 
 .create-btn{
   align-self:flex-end;
   border:none;
-  border-radius:18px;
-  padding:16px 24px;
-  background:#f4f4f5;
-  color:#05060a;
-  font-size:18px;
-  font-weight:700;
+  border-radius:12px;
+  padding:10px 15px;
+
+  font-size:1rem;
+
+  border:none;
   cursor:pointer;
-  transition:.15s;
+  background:#ffffff;
+  color:#111111;
+  font-weight:600;
+  transition:all .15s ease;
 }
 
 .create-btn:hover{
-  transform:translateY(-1px);
+  transform:translateY(-2px);
 }
 
 `;
@@ -1060,7 +1131,7 @@ dashboardScreen.innerHTML = `
     </div>
 
     <button class="dashboard-primary-btn" id="createSetBtn">
-      Create Puzzle Set
+      +
     </button>
     <div id="modalRoot"></div>
   </div>
@@ -1179,7 +1250,7 @@ document
                   100
                 </div>
               </div>
-  
+            <div class="range-slider">
               <input
                 id="puzzleCount"
                 type="range"
@@ -1187,6 +1258,7 @@ document
                 max="1000"
                 value="100"
               />
+            </div>
             </div>
   
             <div class="slider-row">
@@ -1227,22 +1299,23 @@ document
             </div>
   
           </div>
-  
-          <div
-            id="foundCount"
-            class="found-pill"
-          >
-            Calculating...
+          
+          <div class ="modal-footer">
+            <div
+              id="foundCount"
+              class="found-pill"
+            >
+              Calculating...
+            </div>
+            <button
+              id="confirmCreate"
+              class="create-btn"
+            >
+              Create Set
+            </button>
+            
           </div>
-  
-          <button
-            id="confirmCreate"
-            class="create-btn"
-          >
-            Create Set
-          </button>
-  
-        </div>
+          </div>
   
       </div>
     `;
@@ -2144,7 +2217,7 @@ function renderPuzzleSetCards() {
             class="start-btn"
             data-set-id="${set.SetId}"
           >
-            Start
+            ⏵
           </button>
         </div>
     
