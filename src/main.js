@@ -1135,38 +1135,31 @@ async function endPuzzleTrainer () {
   puzzleCounter.textContent = "!!";
   puzzleTitle.textContent = "COMPLETED!";
 
-  const response = await fetch("/src/puzzleset.xlsx");
-  const arrayBuffer = await response.arrayBuffer();
-
-  const workbook = XLSX.read(arrayBuffer, {
-    type: "array"
-  });
-
   const setStats = JSON.parse(localStorage.getItem("puzzleSets")) || [];
 
   const row = setStats.find(r => r.SetId === currentSetId);
-  
-  const accuracy = trackerData.filter(x => x.Status === "correct").length / trackerData.length;
+
+  const accuracy = trackerData.filter(x => x.status === "correct").length / trackerData.length;
   const solveTime = timeTaken.split(":").reduce((m, s) => m * 60 + +s);
-  
+
   if (row) {
     row.lastSolveTime = solveTime;
     row.bestTime = row.bestTime ? Math.min(row.bestTime, solveTime) : solveTime;
     row.lastSolveDate = new Date().toLocaleDateString("en-GB");
-  
-    const accuracyArr = JSON.parse(row.accuracyArray || "[]");
-    const timeArr = JSON.parse(row.solveTimeArray || "[]");
-  
+
+    const accuracyArr = row.accuracyArray || [];
+    const timeArr = row.solveTimeArray || [];
+
     accuracyArr.push(accuracy);
     timeArr.push(solveTime);
-  
-    row.accuracyArray = JSON.stringify(accuracyArr);
-    row.solveTimeArray = JSON.stringify(timeArr);
-  
+
+    row.accuracyArray = accuracyArr;
+    row.solveTimeArray = timeArr;
+
     row.averageAccuracy =
       accuracyArr.reduce((a, b) => a + b, 0) / accuracyArr.length;
   }
-  
+
   localStorage.setItem("puzzleSets", JSON.stringify(setStats));
 
   await sleep(700);
@@ -1556,9 +1549,9 @@ function renderPuzzleSetCards() {
       `
       : `<div class="sparkline-placeholder">—</div>`;
 
-    return `
+      return `
       <article class="puzzle-card">
-
+    
         <div class="card-header">
           <div>
             <div class="set-id">${set.SetId}</div>
@@ -1566,47 +1559,47 @@ function renderPuzzleSetCards() {
               ${set.NumberPuzzle || 0} puzzles
             </div>
           </div>
-
+    
           <div class="rating-pill">
             ${set.AverageRating || "—"}
           </div>
         </div>
-
+    
         <div class="card-stats">
-
+    
           <div class="stat-item">
             <span class="label">Best</span>
             <span class="value">${formatTime(set.bestTime)}</span>
           </div>
-
+    
           <div class="stat-item">
             <span class="label">Last</span>
             <span class="value">${formatTime(set.lastSolveTime)}</span>
           </div>
-
+    
           <div class="stat-item">
             <span class="label">Accuracy</span>
             <span class="value">
               ${
-                set.averageAccuracy
-                  ? `${Math.round(set.averageAccuracy * 100)}%`
+                set.averageAccuracy != null
+                  ? `${Math.round(Number(set.averageAccuracy) * 100)}%`
                   : "—"
               }
             </span>
           </div>
-
+    
         </div>
-
+    
         <div class="sparkline-section">
           ${sparkline}
         </div>
-
+    
         <div class="card-footer">
-
+    
           <span class="date-text">
-            ${formatExcelDate(set.lastSolveDate)}
+            ${set.lastSolveDate || "—"}
           </span>
-
+    
           <button
             class="start-btn"
             data-set-id="${set.SetId}"
@@ -1614,29 +1607,15 @@ function renderPuzzleSetCards() {
             Start
           </button>
         </div>
-
+    
       </article>
     `;
+      
 
   }).join("");
   console.log("Dashboard Render Complete");
 }
 
-async function initLS() {
-  const response = await fetch("/src/puzzleset.xlsx");
-  const arrayBuffer = await response.arrayBuffer();
-
-  const workbook = XLSX.read(arrayBuffer, {
-    type: "array"
-  });
-
-  const sheet = workbook.Sheets[workbook.SheetNames[0]];
-
-  puzzleSets = XLSX.utils.sheet_to_json(sheet);
-
-  localStorage.setItem("puzzleSets", JSON.stringify(puzzleSets));
-}
-// await initLS();
 await loadPuzzleSets();
 
 document.querySelectorAll(".start-btn").forEach(btn => {
@@ -1647,4 +1626,8 @@ document.querySelectorAll(".start-btn").forEach(btn => {
 
 });
 
+// localStorage.clear();
+// await createPuzzleSet("/src/0000A.xlsx");
+// await createPuzzleSet("/src/0000D.xlsx");
+// await createPuzzleSet("/src/0008Q.xlsx");
 // startPuzzleSet("puzzles");
