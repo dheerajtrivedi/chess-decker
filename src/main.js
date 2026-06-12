@@ -3,54 +3,12 @@
 import { SimpleChessBoard } from "@0dexz0/simple-chess-board";
 import * as XLSX from "xlsx";
 
-async function loadPuzzles() {
-  const response = await fetch("src/puzzles.xlsx");
-  const arrayBuffer = await response.arrayBuffer();
-
-  const workbook = XLSX.read(arrayBuffer, { type: "array" });
-
-  const sheetName = workbook.SheetNames[0];
-  const sheet = workbook.Sheets[sheetName];
-
-  const rows = XLSX.utils.sheet_to_json(sheet);
-
-  return rows;
-}
-
-const puzzles = await loadPuzzles();
-
-console.log(puzzles);
-
-// let title =  "Mate Combination";
-// let fen = "r2qr1k1/b1p2ppp/pp4n1/P1P1p3/4P1n1/B2P2Pb/3NBP1P/RN1QR1K1 b - - 1 16";
-// let moves = "b6c5 e2g4 h3g4 d1g4";
-// let sideToMove = fen.split(" ")[1] === "w" ? "b" : "w";
-
-// const PUZZLE = {
-//   title: title,
-//   fen: fen,
-//   moves: moves,
-//   sideToMove: sideToMove,
-// };
-
 let PUZZLE = {
-  title: "",
-  fen: "",
-  moves: "",
-  sideToMove: "",
+  title: "800",
+  fen: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+  moves: "e4e5 e7e6",
+  sideToMove: "b",
 };
-async function loadFirstPuzzle() {
-  let title =  puzzles[0].Rating;
-  let fen = puzzles[0].FEN;
-  let moves = puzzles[0].Moves;
-  let sideToMove = fen.split(" ")[1] === "w" ? "b" : "w";
-  PUZZLE.title = title;
-  PUZZLE.fen = fen;
-  PUZZLE.moves = moves;
-  PUZZLE.sideToMove = sideToMove;
-}
-
-loadFirstPuzzle()
 
 let board;
 let mistakes = 0;
@@ -61,6 +19,8 @@ let puzzleCount = 0;
 let timerInterval = null;
 let elapsedSeconds = 0;
 let trackerData = [];
+let puzzleSets = [];
+let puzzles = [];
 let tookHint = 0;
 
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
@@ -68,6 +28,7 @@ const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 const app = document.getElementById("app");
 
 const style = document.createElement("style");
+
 style.textContent = `
 *{
   box-sizing:border-box;
@@ -554,12 +515,236 @@ body {
 .restart-btn:active{
   transform:translateY(0);
 }
+
+#dashboardScreen{
+  width:100%;
+  height:100%;
+  overflow-y:auto;
+  background:#09090b;
+  color:#fafafa;
+  padding:32px;
+  box-sizing:border-box;
+}
+
+.dashboard-container{
+  max-width:1400px;
+  margin:0 auto;
+}
+
+.dashboard-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:24px;
+  margin-bottom:28px;
+  flex-wrap:wrap;
+}
+
+.dashboard-title{
+  margin:0;
+  font-size:2rem;
+  font-weight:700;
+  letter-spacing:-0.03em;
+}
+
+.dashboard-subtitle{
+  margin-top:10px;
+  max-width:700px;
+  color:#a1a1aa;
+  line-height:1.6;
+}
+
+.dashboard-primary-btn{
+  border:none;
+  cursor:pointer;
+  border-radius:12px;
+  background:#ffffff;
+  color:#111111;
+  padding:12px 18px;
+  font-weight:600;
+  transition:all .15s ease;
+}
+
+.dashboard-primary-btn:hover{
+  transform:translateY(-1px);
+}
+
+.dashboard-stats-row{
+  display:flex;
+  gap:14px;
+  margin-bottom:24px;
+}
+
+.dashboard-stat{
+  background:#111113;
+  border:1px solid #232326;
+  border-radius:14px;
+  padding:14px 18px;
+  min-width:160px;
+}
+
+.stat-label{
+  display:block;
+  color:#8b8b92;
+  font-size:.75rem;
+  margin-bottom:4px;
+}
+
+.stat-value{
+  font-size:1.2rem;
+  font-weight:700;
+}
+
+.puzzle-set-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
+  gap:14px;
+}
+
+.puzzle-card{
+  background:#111113;
+  border:1px solid #222226;
+  border-radius:14px;
+  padding:14px;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  transition:all .15s ease;
+}
+
+.puzzle-card:hover{
+  border-color:#333338;
+  transform:translateY(-1px);
+}
+
+.card-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:12px;
+}
+
+.set-id{
+  font-size:.95rem;
+  font-weight:700;
+  color:#fafafa;
+}
+
+.set-meta{
+  margin-top:2px;
+  font-size:.75rem;
+  color:#71717a;
+}
+
+.rating-pill{
+  padding:4px 9px;
+  border-radius:999px;
+  background:#18181b;
+  border:1px solid #2a2a2e;
+  font-size:.72rem;
+  font-weight:600;
+  color:#d4d4d8;
+}
+
+.card-stats{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:10px;
+}
+
+.stat-item{
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+}
+
+.stat-item .label{
+  font-size:.68rem;
+  color:#71717a;
+  text-transform:uppercase;
+  letter-spacing:.04em;
+}
+
+.stat-item .value{
+  font-size:.84rem;
+  font-weight:600;
+  color:#fafafa;
+}
+
+.sparkline-section{
+  height:100px;
+  color:#60a5fa;
+  justify-items: center;
+}
+
+.sparkline{
+  width:90%;
+  height:100%;
+  display:block;
+}
+
+.sparkline-placeholder{
+  color:#52525b;
+  font-size:.85rem;
+}
+
+.card-footer{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-top:2px;
+}
+
+.date-text{
+  font-size:.72rem;
+  color:#71717a;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  max-width:140px;
+}
+
+.start-btn{
+  border:none;
+  background:#fafafa;
+  color:#09090b;
+  border-radius:8px;
+  padding:7px 12px;
+  font-size:.78rem;
+  font-weight:600;
+  cursor:pointer;
+  transition:all .15s ease;
+}
+
+.start-btn:hover{
+  opacity:.9;
+}
+
+@media (max-width:768px){
+
+  #dashboardScreen{
+    padding:20px;
+  }
+
+  .dashboard-header{
+    flex-direction:column;
+  }
+
+  .dashboard-primary-btn{
+    width:100%;
+  }
+
+  .card-metrics{
+    grid-template-columns:1fr;
+  }
+}
 `;
 document.head.appendChild(style);
 
 const puzzleScreen = document.getElementById("puzzleScreen");
 const summaryScreen = document.getElementById("summaryScreen");
 const pauseScreen = document.getElementById("pauseScreen");
+const dashboardScreen = document.getElementById("dashboardScreen");
 
 puzzleScreen.innerHTML = `
 <div class="app">
@@ -601,6 +786,7 @@ puzzleScreen.innerHTML = `
   </div>
 </div>
 `;
+
 summaryScreen.innerHTML = `
 <div class = "summary-app">
   <div class="summary-screen">
@@ -684,6 +870,26 @@ pauseScreen.innerHTML = `
 </div>
 `;
 
+dashboardScreen.innerHTML = `
+<div class="dashboard-container">
+
+  <div class="dashboard-header">
+    <div>
+      <h1 class="dashboard-title">Chess Trainer</h1>
+      <p class="dashboard-subtitle">
+        A ChessPecker-style chess trainer focused on improving chess pattern recognition through curated puzzle sets.
+      </p>
+    </div>
+
+    <button class="dashboard-primary-btn" onclick="createPuzzleSet()">
+      Create Puzzle Set
+    </button>
+  </div>
+  <div id="puzzleSetGrid" class="puzzle-set-grid"></div>
+
+</div>
+`;
+
 const boardContainer = document.getElementById("board");
 const statusText = document.getElementById("statusText");
 const sideIndicator = document.getElementById("sideIndicator");
@@ -702,7 +908,49 @@ const pauseSkipped = document.getElementById("pauseSkipped");
 
 const timerEl = document.getElementById("timer");
 
+async function startPuzzleSet(setID) {
+  console.log("Loading Puzzle Set: " + setID);
 
+  await activateScreen(puzzleScreen);
+
+  mistakes = 0;
+  solved = false;
+  currentStep = 0;
+  ignoreMoveEvents = false;
+  puzzleCount = 0;
+  timerInterval = null;
+  elapsedSeconds = 0;
+  trackerData = [];
+  puzzleSets = [];
+  puzzles = [];
+  tookHint = 0;
+
+  puzzles = await loadPuzzles(setID);
+
+  updateTimerDisplay();
+  renderPuzzleTracker();
+  resetPuzzle();
+  startTimer();
+  return;
+}
+
+function createPuzzleSet() {
+  return;
+}
+
+async function loadPuzzles(setID) {
+  const response = await fetch("src/" + setID + ".xlsx");
+  const arrayBuffer = await response.arrayBuffer();
+
+  const workbook = XLSX.read(arrayBuffer, { type: "array" });
+
+  const sheetName = workbook.SheetNames[0];
+  const sheet = workbook.Sheets[sheetName];
+
+  const rows = XLSX.utils.sheet_to_json(sheet);
+
+  return rows;
+}
 
 function getPuzzleMoves() {
   return PUZZLE.moves
@@ -980,14 +1228,12 @@ function pausePuzzleTrainer () {
   pauseCorrect.textContent = trackerData.filter(item => item.status === "correct").length;
   pauseIncorrect.textContent = trackerData.filter(item => item.status === "wrong").length;
   pauseSkipped.textContent = trackerData.filter(item => item.status === "skipped").length;
-  puzzleScreen.classList.remove("active");
-  pauseScreen.classList.add("active");
+  activateScreen(pauseScreen);
 }
 
 function resumePuzzleTrainer () {
   ignoreMoveEvents = false;
-  puzzleScreen.classList.add("active");
-  pauseScreen.classList.remove("active");
+  activateScreen(puzzleScreen);
   startTimer();
 }
 
@@ -1012,6 +1258,10 @@ document
   .addEventListener("click", pausePuzzleTrainer);
 
   document
+  .getElementById("startBtn")
+  .addEventListener("click", resumePuzzleTrainer);
+
+document
   .getElementById("startBtn")
   .addEventListener("click", resumePuzzleTrainer);
   
@@ -1095,8 +1345,7 @@ function showSummary(timeTaken) {
   statCorrect.textContent = trackerData.filter(item => item.status === "correct").length;
   statIncorrect.textContent = trackerData.filter(item => item.status === "wrong").length;
   statSkipped.textContent = trackerData.filter(item => item.status === "skipped").length;
-  puzzleScreen.classList.remove("active");
-  summaryScreen.classList.add("active");
+  activateScreen(summaryScreen);
 }
 
 function restartPuzzleTrainer() {
@@ -1108,21 +1357,191 @@ function restartPuzzleTrainer() {
   trackerData = [];
   puzzleTitle.textContent = "...";
 
-  summaryScreen.classList.remove("active");
-  pauseScreen.classList.remove("active");
-  puzzleScreen.classList.add("active");
+  activateScreen(puzzleScreen);
 
   resetTimer();
   resetPuzzle();
   renderPuzzleTracker();
   updateUI()
   startTimer();
-
-  summaryScreen.classList.remove("active");
-  puzzleScreen.classList.add("active");
 }
 
-updateTimerDisplay();
-renderPuzzleTracker();
-resetPuzzle();
-startTimer()
+async function deactivateAllScreen() {
+  summaryScreen.classList.remove("active");
+  pauseScreen.classList.remove("active");
+  puzzleScreen.classList.remove("active");
+  dashboardScreen.classList.remove("active");
+}
+
+async function activateScreen(screen) {
+  await deactivateAllScreen();
+  screen.classList.add("active");
+}
+
+async function loadPuzzleSets() {
+
+  const response = await fetch("/src/puzzleset.xlsx");
+  const arrayBuffer = await response.arrayBuffer();
+
+  const workbook = XLSX.read(arrayBuffer, {
+    type: "array"
+  });
+
+  const sheet = workbook.Sheets[workbook.SheetNames[0]];
+
+  puzzleSets = XLSX.utils.sheet_to_json(sheet);
+
+  puzzleSets = puzzleSets.map(set => ({
+    ...set,
+
+    accuracyArray: parseArray(set.accuracyArray),
+    solveTimeArray: parseArray(set.solveTimeArray)
+  }));
+
+  renderPuzzleSetCards();
+
+}
+
+function parseArray(value) {
+
+  if (!value) return [];
+
+  if (Array.isArray(value)) return value;
+
+  try {
+    return JSON.parse(value);
+  }
+  catch {
+    return [];
+  }
+}
+
+
+function renderPuzzleSetCards() {
+
+  const grid = document.getElementById("puzzleSetGrid");
+
+  const formatTime = (seconds) => {
+    if (seconds == null || seconds === "") return "—";
+
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.round(seconds % 60);
+
+    return `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
+  };
+
+  const formatExcelDate = (excelDate) => {
+    if (!excelDate) return "Never solved";
+
+    const date = new Date((excelDate - 25569) * 86400 * 1000);
+
+    return date.toLocaleDateString("en-GB", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "2-digit"
+    });
+  };
+
+  grid.innerHTML = puzzleSets.map(set => {
+
+    const times = set.solveTimeArray || [];
+
+    const max = Math.max(...times, 1);
+    const min = Math.min(...times, 0);
+
+    const sparkline = times.length > 1
+      ? `
+        <svg class="sparkline" viewBox="0 0 100 24" preserveAspectRatio="none">
+          <polyline
+            fill="none"
+            stroke="currentColor"
+            stroke-width="0.6"
+            points="${
+              times.map((v, i) => {
+                const x = (i / (times.length - 1)) * 100;
+                const y = 22 - ((v - min) / ((max - min) || 1)) * 18;
+                return `${x},${y}`;
+              }).join(" ")
+            }"
+          />
+        </svg>
+      `
+      : `<div class="sparkline-placeholder">—</div>`;
+
+    return `
+      <article class="puzzle-card">
+
+        <div class="card-header">
+          <div>
+            <div class="set-id">${set.SetId}</div>
+            <div class="set-meta">
+              ${set.NumberPuzzle || 0} puzzles
+            </div>
+          </div>
+
+          <div class="rating-pill">
+            ${set.AverageRating || "—"}
+          </div>
+        </div>
+
+        <div class="card-stats">
+
+          <div class="stat-item">
+            <span class="label">Best</span>
+            <span class="value">${formatTime(set.bestTime)}</span>
+          </div>
+
+          <div class="stat-item">
+            <span class="label">Last</span>
+            <span class="value">${formatTime(set.lastSolveTime)}</span>
+          </div>
+
+          <div class="stat-item">
+            <span class="label">Accuracy</span>
+            <span class="value">
+              ${
+                set.averageAccuracy
+                  ? `${Math.round(set.averageAccuracy * 100)}%`
+                  : "—"
+              }
+            </span>
+          </div>
+
+        </div>
+
+        <div class="sparkline-section">
+          ${sparkline}
+        </div>
+
+        <div class="card-footer">
+
+          <span class="date-text">
+            ${formatExcelDate(set.lastSolveDate)}
+          </span>
+
+          <button
+            class="start-btn"
+            data-set-id="${set.SetId}"
+          >
+            Start
+          </button>
+        </div>
+
+      </article>
+    `;
+
+  }).join("");
+  console.log("Dashboard Render Complete");
+}
+
+await loadPuzzleSets();
+
+document.querySelectorAll(".start-btn").forEach(btn => {
+
+  btn.addEventListener("click", () => {
+    startPuzzleSet(btn.dataset.setId);
+  });
+
+});
+
+// startPuzzleSet("puzzles");
