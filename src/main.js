@@ -22,6 +22,7 @@ let trackerData = [];
 let puzzleSets = [];
 let puzzles = [];
 let tookHint = 0;
+let currentSetId = "";
 
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -910,6 +911,7 @@ const timerEl = document.getElementById("timer");
 
 async function startPuzzleSet(setID) {
   console.log("Loading Puzzle Set: " + setID);
+  currentSetId = setID;
 
   await activateScreen(puzzleScreen);
 
@@ -934,8 +936,55 @@ async function startPuzzleSet(setID) {
   return;
 }
 
-function createPuzzleSet() {
-  return;
+async function createPuzzleSet(fileName) {
+
+  const response = await fetch(fileName);
+  const arrayBuffer = await response.arrayBuffer();
+
+  const workbook = XLSX.read(arrayBuffer, { type: "array" });
+  const sheet = workbook.Sheets[workbook.SheetNames[0]];
+  const puzzles = XLSX.utils.sheet_to_json(sheet);
+
+  const setId = fileName
+    .split("/")
+    .pop()
+    .replace(".xlsx", "");
+
+  const averageRating = Math.round(
+    puzzles.reduce((sum, p) => sum + Number(p.Rating || 0), 0) /
+    puzzles.length
+  );
+
+  const newSet = {
+    SetId: setId,
+    AverageRating: averageRating,
+    NumberPuzzle: puzzles.length,
+    lastSolveTime: null,
+    bestTime: null,
+    lastSolveDate: null,
+    averageAccuracy: null,
+    accuracyArray: [],
+    solveTimeArray: []
+  };
+
+  const puzzleSets =
+    JSON.parse(localStorage.getItem("puzzleSets")) || [];
+
+  const existingIndex =
+    puzzleSets.findIndex(s => s.SetId === setId);
+
+  if (existingIndex >= 0) {
+    puzzleSets[existingIndex] = newSet;
+  } else {
+    puzzleSets.push(newSet);
+  }
+
+  localStorage.setItem(
+    "puzzleSets",
+    JSON.stringify(puzzleSets)
+  );
+
+  return newSet;
 }
 
 async function loadPuzzles(setID) {
@@ -1079,11 +1128,47 @@ function loadCurrentPuzzle() {
 }
 async function endPuzzleTrainer () {
   let timeTaken = stopTimer();
+
   setMessage(`Solved in ${timeTaken}`);
   board.flipBoard('w');
   board.setPosition("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
   puzzleCounter.textContent = "!!";
   puzzleTitle.textContent = "COMPLETED!";
+
+  const response = await fetch("/src/puzzleset.xlsx");
+  const arrayBuffer = await response.arrayBuffer();
+
+  const workbook = XLSX.read(arrayBuffer, {
+    type: "array"
+  });
+
+  const setStats = JSON.parse(localStorage.getItem("puzzleSets")) || [];
+
+  const row = setStats.find(r => r.SetId === currentSetId);
+  
+  const accuracy = trackerData.filter(x => x.Status === "correct").length / trackerData.length;
+  const solveTime = timeTaken.split(":").reduce((m, s) => m * 60 + +s);
+  
+  if (row) {
+    row.lastSolveTime = solveTime;
+    row.bestTime = row.bestTime ? Math.min(row.bestTime, solveTime) : solveTime;
+    row.lastSolveDate = new Date().toLocaleDateString("en-GB");
+  
+    const accuracyArr = JSON.parse(row.accuracyArray || "[]");
+    const timeArr = JSON.parse(row.solveTimeArray || "[]");
+  
+    accuracyArr.push(accuracy);
+    timeArr.push(solveTime);
+  
+    row.accuracyArray = JSON.stringify(accuracyArr);
+    row.solveTimeArray = JSON.stringify(timeArr);
+  
+    row.averageAccuracy =
+      accuracyArr.reduce((a, b) => a + b, 0) / accuracyArr.length;
+  }
+  
+  localStorage.setItem("puzzleSets", JSON.stringify(setStats));
+
   await sleep(700);
   showSummary(timeTaken);
   return;
@@ -1380,23 +1465,19 @@ async function activateScreen(screen) {
 
 async function loadPuzzleSets() {
 
-  const response = await fetch("/src/puzzleset.xlsx");
-  const arrayBuffer = await response.arrayBuffer();
-
-  const workbook = XLSX.read(arrayBuffer, {
-    type: "array"
-  });
-
-  const sheet = workbook.Sheets[workbook.SheetNames[0]];
-
-  puzzleSets = XLSX.utils.sheet_to_json(sheet);
+  puzzleSets = JSON.parse(localStorage.getItem("puzzleSets")) || [];
 
   puzzleSets = puzzleSets.map(set => ({
     ...set,
-
-    accuracyArray: parseArray(set.accuracyArray),
-    solveTimeArray: parseArray(set.solveTimeArray)
+    accuracyArray: typeof set.accuracyArray === "string"
+      ? JSON.parse(set.accuracyArray)
+      : set.accuracyArray || [],
+    solveTimeArray: typeof set.solveTimeArray === "string"
+      ? JSON.parse(set.solveTimeArray)
+      : set.solveTimeArray || []
   }));
+
+  console.log(puzzleSets);
 
   renderPuzzleSetCards();
 
@@ -1444,10 +1525,17 @@ function renderPuzzleSetCards() {
 
   grid.innerHTML = puzzleSets.map(set => {
 
-    const times = set.solveTimeArray || [];
+    // const times = set.solveTimeArray || [];
+
+
+    const times = Array.isArray(set.solveTimeArray)
+      ? set.solveTimeArray
+      : parseArray(set.solveTimeArray);
 
     const max = Math.max(...times, 1);
     const min = Math.min(...times, 0);
+
+
 
     const sparkline = times.length > 1
       ? `
@@ -1534,6 +1622,21 @@ function renderPuzzleSetCards() {
   console.log("Dashboard Render Complete");
 }
 
+async function initLS() {
+  const response = await fetch("/src/puzzleset.xlsx");
+  const arrayBuffer = await response.arrayBuffer();
+
+  const workbook = XLSX.read(arrayBuffer, {
+    type: "array"
+  });
+
+  const sheet = workbook.Sheets[workbook.SheetNames[0]];
+
+  puzzleSets = XLSX.utils.sheet_to_json(sheet);
+
+  localStorage.setItem("puzzleSets", JSON.stringify(puzzleSets));
+}
+// await initLS();
 await loadPuzzleSets();
 
 document.querySelectorAll(".start-btn").forEach(btn => {
