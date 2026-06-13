@@ -419,6 +419,10 @@ body {
 	color: #fff;
 }
 
+.summary-screen h4 {
+  color: #60a5fa;
+}
+
 .summary-header h1 {
 	margin: 0;
 	font-size: 2rem;
@@ -584,6 +588,12 @@ body {
   gap: 10px;
 }
 
+#overallStat {
+  display:flex;
+  flex-direction: column;
+  gap:20px;
+}
+
 .stat-item {
   display: flex;
   flex-direction: column;
@@ -613,6 +623,23 @@ body {
 
 .value.amber {
 	color: #e09b13;
+}
+
+.sparkline-section {
+  height: 100px;
+  color: #60a5fa;
+  justify-items: center;
+}
+
+.sparkline {
+  width: 90%;
+  height: 100%;
+  display: block;
+}
+
+.sparkline-placeholder {
+  color: #52525b;
+  font-size: .85rem;
 }
 
 
@@ -1140,10 +1167,11 @@ summaryScreen.innerHTML = `
   <div class="summary-screen">
 
     <div class="summary-header">
-      <h1>Session Statistics</h1>
+      <h1>Statistics</h1>
     </div>
     
     <article class="summary-card">
+      <h4>SESSION</h4>
       <div class="card-stats">
         <div class="stat-item">
             <span class="label">Total Time</span>
@@ -1166,8 +1194,10 @@ summaryScreen.innerHTML = `
           <span class="value amber" id = "statSkipped">8</span>
         </div>
       </div>
-
+      <h4>OVERALL</h4>
+      <div id = "overallStat">-</div>
     </article>
+    
     <button id="restartBtn" class="summary-btn">
       Restart Training
     </button>
@@ -1201,7 +1231,6 @@ pauseScreen.innerHTML = `
           <span class="label">Incorrect</span>
           <span class="value danger" id = "pauseIncorrect">8</span>
         </div>
-
         <div class="stat-item">
           <span class="label">Skipped</span>
           <span class="value amber" id = "pauseSkipped">8</span>
@@ -1209,7 +1238,6 @@ pauseScreen.innerHTML = `
       </div>
 
     </article>
-
     <button id="startBtn" class="summary-btn">
       Continue Training
     </button>
@@ -2134,7 +2162,104 @@ function showSummary(timeTaken) {
   statCorrect.textContent = trackerData.filter(item => item.status === "correct").length;
   statIncorrect.textContent = trackerData.filter(item => item.status === "wrong").length;
   statSkipped.textContent = trackerData.filter(item => item.status === "skipped").length;
-  activateScreen(summaryScreen);
+
+  const overallStat = document.getElementById("overallStat");
+
+  const formatTime = (seconds) => {
+  if (seconds == null || seconds === "") return "—";
+
+  const mins = Math.floor(seconds / 60);
+  const secs = Math.round(seconds % 60);
+
+  return `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
+    };
+
+
+  const puzzleSets_complete = JSON.parse(localStorage.getItem("puzzleSets"));
+  const set = puzzleSets_complete.find(set => set.SetId === currentSetId);
+
+  console.log(currentSetId);
+
+  // const times = set.solveTimeArray || [];
+
+
+  const times = Array.isArray(set.solveTimeArray)
+  ? set.solveTimeArray
+  : parseArray(set.solveTimeArray);
+
+  const max = Math.max(...times, 1);
+  const min = Math.min(...times, 0);
+
+
+  const sparkline = times.length > 1
+  ? `
+          <svg class="sparkline" viewBox="0 0 100 24" preserveAspectRatio="none">
+            <polyline
+              fill="none"
+              stroke="currentColor"
+              stroke-width="0.6"
+              points="${
+  times.map((v, i) => {
+  const x = (i / (times.length - 1)) * 100;
+  const y = 22 - ((v - min) / ((max - min) || 1)) * 18;
+  return `${x},${y}`;
+                }).join(" ")
+  }"
+            />
+          </svg>
+        `
+  : `<div class="sparkline-placeholder">—</div>`;
+
+  overallStat.innerHTML =`
+        <div class="card-stats">
+  
+          <div class="card-header">
+            <div>
+              <div class="set-id">${set.SetId}</div>
+              <div class="set-meta">
+                ${set.NumberPuzzle || 0} puzzles
+              </div>
+            </div>
+  
+            <div class="rating-pill">
+              ${set.AverageRating || "—"}
+            </div>
+          </div>
+        </div>
+  
+        <div class="card-stats">
+
+          <div class="stat-item">
+            <span class="label">Best</span>
+            <span class="value">${formatTime(set.bestTime)}</span>
+          </div>
+
+          <div class="stat-item">
+            <span class="label">Last</span>
+            <span class="value">${formatTime(set.lastSolveTime)}</span>
+          </div>
+
+          <div class="stat-item">
+            <span class="label">Accuracy</span>
+            <span class="value">
+              ${
+              set.averageAccuracy != null
+                                ? `${Math.round(Number(set.averageAccuracy) * 100)}%`
+                                : "—"
+              }
+            </span>
+          </div>
+
+        </div>
+  
+        <div class="sparkline-section">
+          ${sparkline}
+        </div>
+      `;
+
+  console.log("Summary Statistics Render Complete");
+  summaryScreen.classList.add("active");
+  // activateScreen(summaryScreen);
 }
 
 function restartPuzzleTrainer() {
@@ -2220,18 +2345,6 @@ function renderPuzzleSetCards() {
     const secs = Math.round(seconds % 60);
 
     return `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
-  };
-
-  const formatExcelDate = (excelDate) => {
-    if (!excelDate) return "Never solved";
-
-    const date = new Date((excelDate - 25569) * 86400 * 1000);
-
-    return date.toLocaleDateString("en-GB", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "2-digit"
-    });
   };
 
   grid.innerHTML = puzzleSets.map(set => {
