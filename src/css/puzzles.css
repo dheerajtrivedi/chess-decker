@@ -19,15 +19,15 @@
 }
 
 .card {
-	width: 100%;
-  background: #111113;
-  border: 1px solid #222226;
-  border-radius: 14px;
-	padding: 20px;
-	display: flex;
-	flex-direction: column;
-	gap: 16px;
-	box-shadow: 0 10px 40px rgba(0, 0, 0, .35);
+    width: 100%;
+    background: #212121;
+    border: 1px solid #222226;
+    border-radius: 14px;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, .35);
 }
 
 .card2 {
@@ -204,7 +204,7 @@
 	margin-top: auto;
 	display: flex;
 	justify-content: flex-end;
-	gap: 3px;
+	gap: 5px;
 	padding-top: 12px;
 }
 

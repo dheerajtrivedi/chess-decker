@@ -3,8 +3,10 @@
 import { SimpleChessBoard } from "@0dexz0/simple-chess-board";
 import "./css/global.css";
 import "./css/puzzles.css";
-import "./css/dashboard.css";
-import "./css/summary.css";
+import "./css/neo_dashboard.css";
+// import "./css/dashboard.css";
+// import "./css/summary.css";
+import "./css/neo_summary.css";
 import initSqlJs from "sql.js";
 import * as XLSX from "xlsx";
 
@@ -65,14 +67,14 @@ puzzleScreen.innerHTML = `
       <div class="timer" id="timer">00:00</div>
       <div class="title" id="puzzleTitle">...</div>
       <div class="action-buttons">
-        <button id="pauseBtn" class="icon-btn" title="Hint">
+        <button id="pauseBtn" class="small-round-btn" title="Hint">
           <span>⏸</span>
         </button>
-        <button id="hintBtn" class="icon-btn" title="Hint">
+        <button id="hintBtn" class="small-round-btn" title="Hint">
           <span>✦</span>
         </button>
 
-        <button id="nextBtn" class="icon-btn" title="Next Puzzle">
+        <button id="nextBtn" class="small-round-btn" title="Next Puzzle">
           <span>➟</span>
         </button>
       </div>
@@ -88,11 +90,12 @@ summaryScreen.innerHTML = `
   <div class="summary-screen">
 
     <div class="summary-header">
-      <h1>Statistics</h1>
+      <h1>SUMMARY</h1>
       <button id="returnToDashboard" class="close-btn">✕</button>
     </div>
     
     <article class="summary-card">
+      <hr>
       <h4>SESSION</h4>
       <div class="card-stats">
         <div class="stat-item">
@@ -116,14 +119,16 @@ summaryScreen.innerHTML = `
           <span class="value amber" id = "statSkipped">8</span>
         </div>
       </div>
+      <hr>
       <h4>OVERALL</h4>
       <div id = "overallStat">-</div>
+      <hr>
     </article>
-    
-    <button id="restartBtn" class="summary-icon-btn">
-      <span class="material-symbols-outlined">refresh</span>
-    </button>
-
+    <div class = "summary-action-buttons">
+      <button id="restartBtn" class="round-btn">
+        <span class="material-symbols-outlined">refresh</span>
+      </button>
+    </div>
   </div>
 </div>
 `;
@@ -133,7 +138,7 @@ pauseScreen.innerHTML = `
   <div class="summary-screen">
 
     <div class="summary-header">
-      <h1>Session Statistics</h1>
+      <h1>STATISTICS</h1>
       <button id="startBtn2" class="close-btn">✕</button> 
     </div>
     
@@ -162,11 +167,11 @@ pauseScreen.innerHTML = `
 
     </article>
     <div class = "summary-action-buttons">
-      <button id="startBtn" class="summary-icon-btn">
+      <button id="startBtn" class="round-btn">
         <span class="material-symbols-outlined">play_arrow</span>
       </button>
 
-      <button id="restartBtn2" class="summary-icon-btn">
+      <button id="restartBtn2" class="round-btn">
         <span class="material-symbols-outlined">refresh</span>
       </button>
     </div>
@@ -186,14 +191,14 @@ dashboardScreen.innerHTML = `
       </p>
     </div>
 
-    <button class="dashboard-primary-btn" id="createSetBtn">
-      +
-    </button>
+    
     <div id="modalRoot"></div>
   </div>
   <div id="puzzleSetGrid" class="puzzle-set-grid"></div>
-
 </div>
+<button class="dashboard-primary-btn" id="createSetBtn">
++
+</button>
 `;
 
 const boardContainer = document.getElementById("board");
@@ -284,7 +289,7 @@ document
         <div class="create-set-card">
   
           <div class="modal-header">
-            <h2>Create Puzzle Set</h2>
+            <h2>CREATE SET</h2>
             <button id="cancelCreate" class="close-btn">
               ✕
             </button>
@@ -293,19 +298,19 @@ document
           <input
             id="setName"
             class="set-name-input"
-            placeholder="Set name"
+            placeholder="SET NAME"
           />
   
           <div class="slider-section">
   
             <div class="slider-row">
-              <div>
-                <div class="label">
+              <div class = "slider-label">
+                <div class="slider-label-label">
                   Puzzles
                 </div>
   
                 <div
-                  class="value"
+                  class="slider-label-value"
                   id="countValue"
                 >
                   100
@@ -323,14 +328,13 @@ document
             </div>
   
             <div class="slider-row">
-  
-              <div>
-                <div class="label">
+              <div class = "slider-label">
+                <div class="slider-label-label">
                   Rating
                 </div>
   
                 <div
-                  class="value"
+                  class="slider-label-value"
                   id="ratingValue"
                 >
                   ${minRating} – ${maxRating}
@@ -370,9 +374,9 @@ document
             </div>
             <button
               id="confirmCreate"
-              class="create-btn"
+              class="round-btn"
             >
-              Create Set
+              +
             </button>
             
           </div>
@@ -1157,10 +1161,6 @@ function showSummary(timeTaken) {
               <div class="set-meta">
                 ${set.NumberPuzzle || 0} puzzles
               </div>
-            </div>
-  
-            <div class="rating-pill">
-              ${set.AverageRating || "—"}
             </div>
           </div>
         </div>
