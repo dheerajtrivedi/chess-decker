@@ -1,0 +1,283 @@
+.layout {
+	width: 100%;
+	max-width: 1300px;
+	min-height: calc(100vh - 40px);
+
+	display: grid;
+	grid-template-columns: 50px minmax(520px, 720px) 300px;
+	justify-content: center;
+	align-content: center;
+	gap: 28px;
+}
+
+.board-panel {
+	height: 100%;
+	border: 0px solid #333;
+	border-radius: 0px;
+	padding: 10px;
+	box-shadow: 0 10px 40px rgba(0, 0, 0, .35);
+}
+
+.card {
+	width: 100%;
+  background: #111113;
+  border: 1px solid #222226;
+  border-radius: 14px;
+	padding: 20px;
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+	box-shadow: 0 10px 40px rgba(0, 0, 0, .35);
+}
+
+.card2 {
+	width: 100%;
+	padding: 20px 0 0 0;
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+}
+
+.title {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+
+	height: 50px;
+	min-width: 80px;
+	padding: 0 12px;
+
+	border-radius: 8px;
+
+	color:rgb(255, 255, 255);
+	font-size: 30px;
+	font-weight: 700;
+	font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+
+	user-select: none;
+}
+
+.subtitle {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+
+	height: 30px;
+	min-width: 80px;
+	padding: 0 12px;
+
+	border-radius: 8px;
+
+	color: white;
+	font-size: 25px;
+	font-weight: 800;
+	font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+
+	user-select: none;
+}
+
+.messageBox {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+
+	height: 30px;
+	min-width: 80px;
+	padding: 0 12px;
+
+	border-radius: 8px;
+
+	color: #9aa0a6;
+	font-size: 15px;
+	font-weight: 500;
+	font-style: italic;
+	font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+
+	user-select: none;
+}
+
+.puzzle-tracker {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 14px 18px;
+	align-items: flex-start;
+}
+
+.tracker-item {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	min-width: 20px;
+}
+
+.tracker-icon {
+	width: 18px;
+	height: 18px;
+	border-radius: 3px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 12px;
+	font-weight: 700;
+	color: #fff;
+	box-shadow:
+		inset 0 1px 0 rgba(255, 255, 255, .25),
+		0 1px 2px rgba(0, 0, 0, .15);
+}
+
+.tracker-item.correct .tracker-icon {
+	background: #8bb64a;
+}
+
+.tracker-item.wrong .tracker-icon {
+	background: #e15241;
+}
+
+.tracker-rating {
+	margin-top: 5px;
+	font-size: 12px;
+	font-weight: 700;
+	line-height: 1;
+}
+
+.tracker-item.correct .tracker-rating {
+	color: #5f8d4a;
+}
+
+.tracker-item.wrong .tracker-rating {
+	color: #d13f32;
+}
+
+.tracker-item.skipped .tracker-icon {
+	background: linear-gradient(#f7c64a, #e09b13);
+}
+
+.tracker-item.skipped .tracker-rating {
+	color: #d08a00;
+}
+
+.trackerInfo {
+	flex: 1;
+	min-height: 0;
+	background: #2f2f2f;
+	border-radius: 4px;
+	padding: 12px;
+}
+
+.puzzleCounter {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+
+	min-width: 48px;
+	height: 50px;
+	padding: 0 20px;
+
+	color:rgba(96, 165, 250, 1);
+	font-size: 40px;
+	font-weight: 1000;
+	font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+	user-select: none;
+}
+
+.timer {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+
+	height: 40px;
+	min-width: 80px;
+	padding: 0 12px;
+
+	background: rgba(96, 165, 250, 0.3);
+	border-radius: 4px;
+
+	color: #D4DFE5;
+	font-size: 16px;
+	font-weight: 700;
+	font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+
+	user-select: none;
+}
+
+.action-buttons {
+	margin-top: auto;
+	display: flex;
+	justify-content: flex-end;
+	gap: 3px;
+	padding-top: 12px;
+}
+
+.status-row {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0px;
+}
+
+.status {
+	background: #2f2f2f;
+	border-radius: 12px;
+	padding: 12px;
+	min-height: 56px;
+}
+
+.icon-btn {
+	width: 25px;
+	height: 25px;
+
+	display: flex;
+	align-items: center;
+	justify-content: center;
+
+	background: inherit;
+	border: none;
+	border-radius: 0px;
+
+	color: rgba(224, 238, 255, 0.5);
+	font-size: 18px;
+	font-weight: 100;
+
+	cursor: pointer;
+	transition: all .2s ease;
+
+}
+
+.side-indicator {
+	width: 20px;
+	height: 20px;
+	border-radius: 0px;
+	border: 1px solid rgb(255, 243, 77);
+	flex-shrink: 0;
+}
+
+.side-indicator.white {
+	background: #ffffff;
+}
+
+.side-indicator.black {
+	background: #111111;
+}
+
+.icon-btn:hover {
+	color: #ffffff;
+	transform: translateY(-1px);
+}
+
+.icon-btn:active {
+	transform: scale(0.96);
+}
+
+@media (max-width: 900px) {
+	.layout {
+		min-height: auto;
+		grid-template-columns: 1fr;
+		justify-items: center;
+	}
+
+	.board-panel,
+	.card {
+		width: 100%;
+		max-width: 720px;
+	}
+}

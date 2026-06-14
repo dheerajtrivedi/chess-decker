@@ -1,0 +1,66 @@
+* {
+	box-sizing: border-box;
+}
+
+body {
+	height: 100%;
+	margin: 0;
+	background: #09090b;
+	color: #fff;
+	font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.app {
+	min-height: 100vh;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	box-sizing: border-box;
+}
+
+.success {
+	color: #72df7b;
+}
+
+.screen {
+	position: absolute;
+	inset: 0;
+
+	opacity: 0;
+	pointer-events: none;
+
+	transform: translateY(12px);
+
+	transition:
+		opacity 300ms ease,
+		transform 300ms ease;
+}
+
+.screen.active {
+	opacity: 1;
+	pointer-events: auto;
+	transform: translateY(0);
+}
+
+.close-btn {
+	width: 30px;
+	height: 30px;
+	border: none;
+	background: #05060a;
+	border-radius: 12px;
+	color: #9ea3b3;
+	cursor: pointer;
+}
+
+
+.shadow__btn {
+  background: rgb(0,140,255);
+  box-shadow: 0 0 25px rgb(0,140,255);
+}
+
+.shadow__btn:hover {
+  box-shadow: 0 0 5px rgb(0,140,255),
+              0 0 25px rgb(0,140,255),
+              0 0 50px rgb(0,140,255),
+              0 0 100px rgb(0,140,255);
+}
