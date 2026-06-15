@@ -1,6 +1,5 @@
 .summary-app {
-
-    background-color: rgba(0, 0, 0, 0.3); /* Dim background */
+    background-color: rgba(28, 28, 28, 0.432); /* Dim background */
     backdrop-filter: blur(12px);           /* Blurs elements behind it */
   
       min-height: 100vh;
@@ -32,7 +31,7 @@ hr {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  transition: all .15s ease;
+  /* transition: all .15s ease; */
 }
   
 
@@ -69,11 +68,11 @@ hr {
     display: flex;
     flex-direction: column;
     gap: 10px;
-    border: 0.5px solid #363636;
+    border: 0.5px solid #252525;
     border-radius: 30px;
     background: #212121;
-    box-shadow: 25px 25px 25px rgb(20, 20, 20),
-          0px -0px 10px rgb(40, 40, 40);
+    box-shadow: 20px 20px 30px rgb(35, 35, 35),
+          -1px -1px 10px rgb(60, 60, 60);
   }
   
   .summary-screen h4 {

@@ -55,6 +55,7 @@ puzzleScreen.innerHTML = `
     </div>
     
     <div class = "card">
+      <div class="timer" id="timer">00:00</div>
       <div class="status-row">
         <div id="sideIndicator" class="side-indicator"></div>
         <div class="subtitle" id="statusText">In Progress</div>
@@ -64,18 +65,17 @@ puzzleScreen.innerHTML = `
       <div class = "trackerInfo">
         <div id="puzzleTracker" class="puzzle-tracker"></div>
       </div>
-      <div class="timer" id="timer">00:00</div>
       <div class="title" id="puzzleTitle">...</div>
       <div class="action-buttons">
-        <button id="pauseBtn" class="small-round-btn" title="Hint">
-          <span>⏸</span>
+        <button id="pauseBtn" class="small-flat-btn" title="Pause">
+          <span class="material-symbols-outlined small-size">pause</span>
         </button>
-        <button id="hintBtn" class="small-round-btn" title="Hint">
-          <span>✦</span>
+        <button id="hintBtn" class="small-flat-btn" title="Hint">
+          <span class="material-symbols-outlined small-size">lightbulb_2</span>
         </button>
 
-        <button id="nextBtn" class="small-round-btn" title="Next Puzzle">
-          <span>➟</span>
+        <button id="nextBtn" class="small-flat-btn" title="Next Puzzle">
+          <span class="material-symbols-outlined small-size">keyboard_double_arrow_right</span>
         </button>
       </div>
 
@@ -91,7 +91,11 @@ summaryScreen.innerHTML = `
 
     <div class="summary-header">
       <h1>SUMMARY</h1>
-      <button id="returnToDashboard" class="close-btn">✕</button>
+      <button id="returnToDashboard" class="small-flat-btn">
+      <span class="material-symbols-outlined small-size">
+      close_small
+      </span>
+      </button>
     </div>
     
     <article class="summary-card">
@@ -139,7 +143,7 @@ pauseScreen.innerHTML = `
 
     <div class="summary-header">
       <h1>STATISTICS</h1>
-      <button id="startBtn2" class="close-btn">✕</button> 
+      <button id="startBtn2" class="small-flat-btn">✕</button> 
     </div>
     
     <article class="summary-card">
@@ -290,8 +294,10 @@ document
   
           <div class="modal-header">
             <h2>CREATE SET</h2>
-            <button id="cancelCreate" class="close-btn">
-              ✕
+            <button id="cancelCreate" class="small-flat-btn">
+              <span class="material-symbols-outlined small-size">
+              close_small
+              </span>
             </button>
           </div>
   
@@ -804,7 +810,6 @@ async function endPuzzleTrainer () {
   board.flipBoard('w');
   board.setPosition("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
   puzzleCounter.textContent = "!!";
-  puzzleTitle.textContent = "COMPLETED!";
 
   const setStats = JSON.parse(localStorage.getItem("puzzleSets")) || [];
 
@@ -1025,6 +1030,7 @@ document
   .addEventListener("click", resumePuzzleTrainer);
   
 function renderPuzzleTracker() {
+  console.log(trackerData.length);
   const container = document.getElementById("puzzleTracker");
 
   container.innerHTML = trackerData
