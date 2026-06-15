@@ -2,7 +2,7 @@
 #dashboardScreen {
 	width: 100%;
 	height: 100%;
-	/* overflow-y: auto; */
+	overflow-y: auto;
 	background: #212121;
 	color: #fafafa;
 	padding: 50px 100px;

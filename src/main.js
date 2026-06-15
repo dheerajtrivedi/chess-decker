@@ -7,8 +7,139 @@ import "./css/neo_dashboard.css";
 // import "./css/dashboard.css";
 // import "./css/summary.css";
 import "./css/neo_summary.css";
+import "./css/setstat.css";
+
 import initSqlJs from "sql.js";
 import * as XLSX from "xlsx";
+
+const CHESS_THEMES = {
+  tactics: {
+    label: "Tactical Motifs",
+    themes: [
+      { id: "fork", label: "Fork" },
+      { id: "pin", label: "Pin" },
+      { id: "skewer", label: "Skewer" },
+      { id: "xRayAttack", label: "X-Ray Attack" },
+      { id: "discoveredAttack", label: "Discovered Attack" },
+      { id: "discoveredCheck", label: "Discovered Check" },
+      { id: "doubleCheck", label: "Double Check" },
+      { id: "deflection", label: "Deflection" },
+      { id: "attraction", label: "Attraction" },
+      { id: "interference", label: "Interference" },
+      { id: "clearance", label: "Clearance" },
+      { id: "intermezzo", label: "Zwischenzug (Intermezzo)" },
+      { id: "capturingDefender", label: "Remove the Defender" },
+      { id: "collinearMove", label: "Collinear Move" }
+    ]
+  },
+
+  attack: {
+    label: "Attacking Themes",
+    themes: [
+      { id: "kingsideAttack", label: "Kingside Attack" },
+      { id: "queensideAttack", label: "Queenside Attack" },
+      { id: "attackingF2F7", label: "Attack on f2/f7" },
+      { id: "exposedKing", label: "Exposed King" },
+      { id: "sacrifice", label: "Sacrifice" },
+      { id: "quietMove", label: "Quiet Move" },
+      { id: "hangingPiece", label: "Hanging Piece" },
+      { id: "trappedPiece", label: "Trapped Piece" }
+    ]
+  },
+
+  mates: {
+    label: "Checkmate Patterns",
+    themes: [
+      { id: "mateIn1", label: "Mate in 1" },
+      { id: "mateIn2", label: "Mate in 2" },
+      { id: "mateIn3", label: "Mate in 3" },
+      { id: "mateIn4", label: "Mate in 4" },
+      { id: "mateIn5", label: "Mate in 5" },
+
+      { id: "backRankMate", label: "Back Rank Mate" },
+      { id: "smotheredMate", label: "Smothered Mate" },
+      { id: "anastasiaMate", label: "Anastasia's Mate" },
+      { id: "arabianMate", label: "Arabian Mate" },
+      { id: "bodenMate", label: "Boden's Mate" },
+      { id: "blindSwineMate", label: "Blind Swine Mate" },
+      { id: "balestraMate", label: "Balestra Mate" },
+      { id: "cornerMate", label: "Corner Mate" },
+      { id: "doubleBishopMate", label: "Double Bishop Mate" },
+      { id: "dovetailMate", label: "Dovetail Mate" },
+      { id: "epauletteMate", label: "Epaulette Mate" },
+      { id: "hookMate", label: "Hook Mate" },
+      { id: "killBoxMate", label: "Kill Box Mate" },
+      { id: "morphysMate", label: "Morphy's Mate" },
+      { id: "operaMate", label: "Opera Mate" },
+      { id: "pillsburysMate", label: "Pillsbury's Mate" },
+      { id: "swallowstailMate", label: "Swallow's Tail Mate" },
+      { id: "triangleMate", label: "Triangle Mate" },
+      { id: "vukovicMate", label: "Vuković Mate" }
+    ]
+  },
+
+  endgames: {
+    label: "Endgames",
+    themes: [
+      { id: "pawnEndgame", label: "Pawn Endgame" },
+      { id: "rookEndgame", label: "Rook Endgame" },
+      { id: "bishopEndgame", label: "Bishop Endgame" },
+      { id: "knightEndgame", label: "Knight Endgame" },
+      { id: "queenEndgame", label: "Queen Endgame" },
+      { id: "queenRookEndgame", label: "Queen & Rook Endgame" },
+      { id: "zugzwang", label: "Zugzwang" }
+    ]
+  },
+
+  pawns: {
+    label: "Pawn Play",
+    themes: [
+      { id: "advancedPawn", label: "Advanced Pawn" },
+      { id: "promotion", label: "Promotion" },
+      { id: "underPromotion", label: "Underpromotion" },
+      { id: "enPassant", label: "En Passant" }
+    ]
+  },
+
+  strategy: {
+    label: "Strategic Themes",
+    themes: [
+      { id: "advantage", label: "Gain an Advantage" },
+      { id: "equality", label: "Equalize" },
+      { id: "crushing", label: "Winning Position" },
+      { id: "defensiveMove", label: "Defensive Move" },
+      { id: "castling", label: "Castling" }
+    ]
+  },
+
+  phase: {
+    label: "Game Phase",
+    themes: [
+      { id: "opening", label: "Opening" },
+      { id: "middlegame", label: "Middlegame" },
+      { id: "endgame", label: "Endgame" }
+    ]
+  },
+
+  length: {
+    label: "Puzzle Length",
+    themes: [
+      { id: "oneMove", label: "One Move" },
+      { id: "short", label: "Short" },
+      { id: "long", label: "Long" },
+      { id: "veryLong", label: "Very Long" }
+    ]
+  },
+
+  quality: {
+    label: "Source Quality",
+    themes: [
+      { id: "master", label: "Master Game" },
+      { id: "superGM", label: "Super GM Game" },
+      { id: "masterVsMaster", label: "Master vs Master" }
+    ]
+  }
+};
 
 let PUZZLE = {
   title: "800",
@@ -45,7 +176,6 @@ const pauseScreen = document.getElementById("pauseScreen");
 const dashboardScreen = document.getElementById("dashboardScreen");
 
 puzzleScreen.innerHTML = `
-<div class="app">
   <div class="layout">
     <div class = "card2">
       <div class="puzzleCounter" id="puzzleCounter"> 1 </div>
@@ -82,7 +212,6 @@ puzzleScreen.innerHTML = `
     </div>
 
   </div>
-</div>
 `;
 
 summaryScreen.innerHTML = `
@@ -274,6 +403,10 @@ function returnToDashboard() {
 document
   .getElementById("createSetBtn")
   .addEventListener("click", openPuzzleSetModal);
+
+// document
+//   .getElementById("createSetBtn")
+//   .addEventListener("click", renderSetStatistics);
 
   async function openPuzzleSetModal() {
 
@@ -590,71 +723,6 @@ document
     }
   }
 
-// async function createPuzzleSet(fileName) {
-
-//   const response = await fetch(fileName);
-//   const arrayBuffer = await response.arrayBuffer();
-
-//   const workbook = XLSX.read(arrayBuffer, { type: "array" });
-//   const sheet = workbook.Sheets[workbook.SheetNames[0]];
-//   const puzzles = XLSX.utils.sheet_to_json(sheet);
-
-//   const setId = fileName
-//     .split("/")
-//     .pop()
-//     .replace(".xlsx", "");
-
-//   const averageRating = Math.round(
-//     puzzles.reduce((sum, p) => sum + Number(p.Rating || 0), 0) /
-//     puzzles.length
-//   );
-
-  // const newSet = {
-  //   SetId: setId,
-  //   AverageRating: averageRating,
-  //   NumberPuzzle: puzzles.length,
-  //   lastSolveTime: null,
-  //   bestTime: null,
-  //   lastSolveDate: null,
-  //   averageAccuracy: null,
-  //   accuracyArray: [],
-  //   solveTimeArray: []
-  // };
-
-//   const puzzleSets =
-//     JSON.parse(localStorage.getItem("puzzleSets")) || [];
-
-//   const existingIndex =
-//     puzzleSets.findIndex(s => s.SetId === setId);
-
-//   if (existingIndex >= 0) {
-//     puzzleSets[existingIndex] = newSet;
-//   } else {
-//     puzzleSets.push(newSet);
-//   }
-
-//   localStorage.setItem(
-//     "puzzleSets",
-//     JSON.stringify(puzzleSets)
-//   );
-
-//   return newSet;
-// }
-
-// async function loadPuzzles(setID) {
-//   const response = await fetch("src/" + setID + ".xlsx");
-//   const arrayBuffer = await response.arrayBuffer();
-
-//   const workbook = XLSX.read(arrayBuffer, { type: "array" });
-
-//   const sheetName = workbook.SheetNames[0];
-//   const sheet = workbook.Sheets[sheetName];
-
-//   const rows = XLSX.utils.sheet_to_json(sheet);
-
-//   return rows;
-// }
-
 async function loadPuzzles(setID) {
   const storageKey = `puzzles_${setID}`;
 
@@ -742,7 +810,7 @@ function setMessage(text) {
 }
 
 function updateUI() {
-  // puzzleTitle.textContent = PUZZLE.title;
+  puzzleTitle.textContent = PUZZLE.title;
 
   if (solved) {
     statusText.innerHTML =
@@ -1025,6 +1093,7 @@ document
   .getElementById("returnToDashboard")
   .addEventListener("click", returnToDashboard);
 
+
 document
   .getElementById("startBtn")
   .addEventListener("click", resumePuzzleTrainer);
@@ -1229,13 +1298,13 @@ async function deactivateAllScreen() {
   pauseScreen.classList.remove("active");
   puzzleScreen.classList.remove("active");
   dashboardScreen.classList.remove("active");
+  setStatScreen.classList.remove("active");
 }
 
 async function activateScreen(screen) {
   await deactivateAllScreen();
   screen.classList.add("active");
 }
-
 async function loadPuzzleSets() {
 
   puzzleSets = JSON.parse(localStorage.getItem("puzzleSets")) || [];
@@ -1392,6 +1461,347 @@ function renderPuzzleSetCards() {
 }
 
 await loadPuzzleSets();
+
+function openPuzzle(puzzleID) {
+  console.log(puzzleID);
+}
+
+function renderSetStatistics() {
+  const themeMap = Object.values(CHESS_THEMES)
+    .flatMap(category => category.themes)
+    .reduce((map, theme) => ({ ...map, [theme.id]: theme.label }), {});
+
+  activateScreen(setStatScreen)
+  let setID = 'ABCD1';
+  const container = document.getElementById("app");
+
+  const puzzleSets =
+    JSON.parse(localStorage.getItem("puzzleSets")) || [];
+
+  const puzzles =
+    JSON.parse(localStorage.getItem(`puzzles_${setID}`)) || [];
+  
+  console.log(typeof puzzles[0].Themes);
+  console.log(puzzles[0].Themes);
+
+  const set =
+    puzzleSets.find(
+      (s) => String(s.SetId) === String(setID)
+    );
+
+  if (!set) {
+    container.innerHTML = `<div>Set not found</div>`;
+    return;
+  }
+
+  const avgRating = set.AverageRating ?? 0;
+  const puzzleCount = set.NumberPuzzle ?? puzzles.length;
+  const averageAccuracy = set.averageAccuracy;
+
+  const accuracyArray = set.accuracyArray || [];
+  const solveTimeArray = set.solveTimeArray || [];
+
+  const lastThree = accuracyArray
+    .map((acc, i) => ({
+      accuracy: Math.round(acc * 100),
+      time: solveTimeArray[i],
+      attempt: i + 1,
+    }))
+    .slice(-3)
+    .reverse();
+
+  const bestIndex =
+    accuracyArray.length
+      ? accuracyArray.indexOf(
+          Math.max(...accuracyArray)
+        )
+      : -1;
+
+  const bestSolve =
+    bestIndex >= 0
+      ? {
+          time: solveTimeArray[bestIndex],
+          accuracy: Math.round(
+            (accuracyArray[bestIndex] || 0) * 100
+          ),
+          attempt: bestIndex + 1,
+        }
+      : null;
+    
+      const fastIndex =
+      solveTimeArray.length
+        ? solveTimeArray.indexOf(
+            Math.min(...solveTimeArray)
+          )
+        : -1;
+  
+    const fastSolve =
+      fastIndex >= 0
+        ? {
+            time: solveTimeArray[fastIndex],
+            accuracy: Math.round(
+              (accuracyArray[fastIndex] || 0) * 100
+            ),
+            attempt: fastIndex + 1,
+          }
+        : null;
+
+  const graphData = accuracyArray.map((acc, i) => ({
+    attempt: i + 1,
+    accuracy: Math.round(acc * 100),
+    time: solveTimeArray[i] ?? null,
+  }));
+
+  container.innerHTML = `
+    <div class="modal-overlay">
+      <div class="setStatistics">
+          <div class="modal-header">
+            <h2>-</h2>
+            <button id="returnToDashboard2" class="small-flat-btn">
+              <span class="material-symbols-outlined small-size">
+                close_small
+              </span>
+            </button>
+          </div>
+          <div class="card-header">
+              <div>
+                  <div class="set-id">${set.SetId}</div>
+                  <div class="set-meta">${puzzleCount} Puzzles</div>
+              </div>
+              <div class="date-text"> ${set.lastSolveDate ?? "-"} </div>
+          </div>
+          <div class="card-stats">
+              <div class="stat-item">
+                  <div class="label">Average Accuracy</div>
+                  <div class="value">
+                      ${
+                          averageAccuracy != null
+                          ? `${Math.round(
+                              averageAccuracy * 100
+                              )}%`
+                          : "-"
+                      }
+                  </div>
+              </div>
+
+              <div class="stat-item">
+                  <div class="label">Average Rating</div>
+                  <div class="value">${avgRating}</div>
+              </div>
+
+              <div class="stat-item">
+                  <div class="label">Last Solve</div>
+                  <div class="value">
+                      ${set.lastSolveDate ?? "-"}
+                  </div>
+              </div>
+
+          </div>  
+          <hr>
+          <div class="setstat-card">
+            <div class = "setstat-solve-card">
+              <div class="setstat-solve-title">
+                <div class="set-id">Last Three Solves</div>
+              </div>
+
+              <div class="card-stats">
+
+                  ${
+                      lastThree.length
+                      ? lastThree
+                          .map(
+                              (s) => `
+                              <div class="stat-item">
+                                  <div class = "label">Attempt #${s.attempt}</div>
+                                  <div class = "value">Accuracy: ${s.accuracy}%</div>
+                                  <div class = "value">Time: ${s.time}s</div>
+                              </div>
+                              `
+                          )
+                          .join("")
+                      : `<div class="emptyState">No solves yet</div>`
+                  }
+
+              </div>
+            </div>
+            <div class = "setstat-solve-card">
+              <div class="setstat-solve-title"">
+
+                  <div class="set-id">
+                      Best Solve
+                  </div>
+
+              </div>
+
+              <div class="card-stats best-solve">
+
+                      ${
+                      bestSolve
+                          ? `
+                              <div class="stat-item">
+                                <div class = "label">Attempt #${bestSolve.attempt}</div>
+                                <div class = "value highlight">Accuracy: ${bestSolve.accuracy}%</div>
+                                <div class = "value">Time: ${bestSolve.time}s</div>
+                              </div>
+                          `
+                          : `<div class="emptyState">No solves yet</div>`
+                      }
+
+                      ${
+                        fastSolve
+                            ? `
+                                <div class="stat-item">
+                                  <div class = "label">Attempt #${fastSolve.attempt}</div>
+                                  <div class = "value">Accuracy: ${fastSolve.accuracy}%</div>
+                                  <div class = "value highlight">Time: ${fastSolve.time}s</div>
+                                </div>
+                            `
+                            : `<div class="emptyState">No solves yet</div>`
+                        }
+
+              </div>
+            </div>
+          </div>
+
+          <div class="statsSection hide">
+
+              <div class="sectionTitle">
+                  Accuracy vs Solve Time
+              </div>
+
+              <canvas
+              id="setStatisticsChart"
+              class="statisticsChart"
+              ></canvas>
+
+          </div>
+
+
+          <div class="puzzleTable">
+              <div class="table-title">Puzzle List </div>
+              <div class="table-head">
+                  <div class="table-head-row">
+                    <div>ID</div>
+                    <div>Rating</div>
+                    <div>Themes</div>
+                  </div>
+              </div>    
+
+              <div class = "table-body">
+
+                  ${puzzles
+                  .map(
+                      (p) => `
+                      <div
+                          class="table-row"
+                          data-puzzleid="${p.PuzzleId}"
+                      >
+                          <div>${p.PuzzleId}</div>
+                          <div>${p.Rating}</div>
+                          <div class="setstat-theme-card">${ JSON.parse(p.Themes).map(id => `<div class="themeItem">${themeMap[id] || id}</div>`).join("") || ""} </div>
+                      </div>
+                      `
+                  )
+                  .join("")}
+
+              </div>
+
+          </div>
+
+      </div>
+    </div>
+  `;
+
+  if (
+    typeof Chart !== "undefined" &&
+    graphData.length
+  ) {
+    const ctx =
+      document
+        .getElementById("setStatisticsChart")
+        .getContext("2d");
+
+    new Chart(ctx, {
+      type: "line",
+      data: {
+        labels: graphData.map(
+          (d) => d.attempt
+        ),
+        datasets: [
+          {
+            label: "Accuracy %",
+            data: graphData.map(
+              (d) => d.accuracy
+            ),
+            yAxisID: "accuracy",
+            tension: 0.3,
+          },
+          {
+            label: "Solve Time (s)",
+            data: graphData.map(
+              (d) => d.time
+            ),
+            yAxisID: "time",
+            tension: 0.3,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: {
+          mode: "index",
+          intersect: false,
+        },
+        scales: {
+          accuracy: {
+            type: "linear",
+            position: "left",
+            min: 0,
+            max: 100,
+            title: {
+              display: true,
+              text: "Accuracy %",
+            },
+          },
+          time: {
+            type: "linear",
+            position: "right",
+            grid: {
+              drawOnChartArea: false,
+            },
+            title: {
+              display: true,
+              text: "Time (s)",
+            },
+          },
+        },
+      },
+    });
+  }
+
+document
+  .querySelectorAll(".table-row")
+  .forEach((row) => {
+    row.addEventListener("click", () => {
+        const url = new URL("puzzle.html", window.location.origin);
+        url.searchParams.set("puzzleId", row.dataset.puzzleid);
+      window.open(url.toString(), "_blank");
+    });
+  });
+}
+
+
+
+
+// document.getElementById("createSetBtn").addEventListener("click", () => {
+//   const puzzleId = "00008"; // your puzzle ID
+
+//   const url = new URL("puzzle.html", window.location.origin);
+//   url.searchParams.set("puzzleId", puzzleId);
+
+//   window.open(url.toString(), "_blank");
+// });
 
 // localStorage.clear();
 // startPuzzleSet("puzzles");
