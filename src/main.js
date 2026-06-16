@@ -224,7 +224,7 @@ summaryScreen.innerHTML = `
       <h1>SUMMARY</h1>
       <button id="returnToDashboard" class="small-flat-btn">
       <span class="material-symbols-outlined small-size">
-      close_small
+      close
       </span>
       </button>
     </div>
@@ -320,9 +320,9 @@ dashboardScreen.innerHTML = `
 
   <div class="dashboard-header">
     <div>
-      <h1 class="dashboard-title">Chess Trainer</h1>
+      <h1 class="dashboard-title">Chess Ԁecker</h1>
       <p class="dashboard-subtitle">
-        A ChessPecker-style chess trainer focused on improving chess pattern recognition through curated puzzle sets.
+        Master chess patterns faster with focused puzzle training and structured repetition.
       </p>
     </div>
 
@@ -431,7 +431,7 @@ document
             <h2>CREATE SET</h2>
             <button id="cancelCreate" class="small-flat-btn">
               <span class="material-symbols-outlined small-size">
-              close_small
+              close
               </span>
             </button>
           </div>
@@ -1484,9 +1484,9 @@ function renderSetStatistics(setID) {
   const themeMap = Object.values(CHESS_THEMES)
     .flatMap(category => category.themes)
     .reduce((map, theme) => ({ ...map, [theme.id]: theme.label }), {});
-
-  activateScreen(setStatScreen)
-  // let setID = 'ABCD1';
+  
+  setStatScreen.classList.add("active")
+  // activateScreen(setStatScreen)
   const puzzleSets =
     JSON.parse(localStorage.getItem("puzzleSets")) || [];
 
@@ -1575,7 +1575,7 @@ function renderSetStatistics(setID) {
           </div>
           <button id="returnToDashboard2" class="small-flat-btn">
             <span class="material-symbols-outlined small-size">
-              close_small
+              close
             </span>
           </button>
         </div>
@@ -1770,6 +1770,9 @@ function renderSetStatistics(setID) {
         .getElementById("setStatisticsChart")
         .getContext("2d");
 
+
+    Chart.defaults.font.family = "'Montserrat', sans-serif";
+
     new Chart(ctx, {
       type: "line",
       data: {
@@ -1783,7 +1786,7 @@ function renderSetStatistics(setID) {
               (d) => d.accuracy
             ),
             yAxisID: "accuracy",
-            tension: 0.3,
+            tension: 0,
           },
           {
             label: "Solve Time (s)",
@@ -1791,13 +1794,39 @@ function renderSetStatistics(setID) {
               (d) => d.time
             ),
             yAxisID: "time",
-            tension: 0.3,
+            tension: 0,
           },
         ],
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
+        layout: {
+          padding: {
+            top:0,
+          },
+        },
+        plugins: {
+          legend: {
+              position: 'top',
+              align: 'center',
+              labels: {
+                boxWidth: 10,
+                font: {
+                    family: "'Montserrat', sans-serif",
+                    size: 12
+                }
+              }
+          }
+        },
+        elements: {
+          line: {
+            borderWidth: 2,
+          },
+          point: {
+            radius: 2,
+          },
+        },
         interaction: {
           mode: "index",
           intersect: false,
@@ -1806,11 +1835,20 @@ function renderSetStatistics(setID) {
           accuracy: {
             type: "linear",
             position: "left",
-            min: 0,
-            max: 100,
+            // min: 0,
+            // max: 100,
+            ticks: {
+              font: {
+                family: "'Montserrat', sans-serif",
+                size: 12,
+              },
+            },
             title: {
               display: true,
               text: "Accuracy %",
+            },
+            grid: {
+              lineWidth: 0,
             },
           },
           time: {
@@ -1819,11 +1857,38 @@ function renderSetStatistics(setID) {
             grid: {
               drawOnChartArea: false,
             },
+            ticks: {
+              font: {
+                family: "'Montserrat', sans-serif",
+                size: 12,
+              },
+            },
             title: {
               display: true,
               text: "Time (s)",
             },
+            ticks: {
+              font: {
+                family: "'Montserrat', sans-serif",
+                size: 10,
+              },
+            },
+            grid: {
+              lineWidth: 0,
+            },
+            
           },
+          x: {
+            ticks: {
+              font: {
+                family: "'Montserrat', sans-serif",
+                size: 10,
+              },
+            },
+            grid: {
+              lineWidth: 0,
+            },
+          }
         },
       },
     });
