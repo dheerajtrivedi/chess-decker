@@ -376,6 +376,19 @@ async function startPuzzleSet(setID) {
   puzzles = [];
   tookHint = 0;
 
+
+  const puzzleSets_complete = JSON.parse(localStorage.getItem("puzzleSets")) || [];
+  const row = puzzleSets_complete.find(r => r.SetId === currentSetId);
+
+  if(row.isPaused) {
+    puzzleCount = row.pausedAt;
+    elapsedSeconds = row.pausedTime;
+    trackerData = row.pausedSolveTracker;
+    
+  }
+  row.isPaused = 1;
+  localStorage.setItem("puzzleSets", JSON.stringify(puzzleSets_complete));
+
   puzzles = await loadPuzzles(setID);
 
   updateTimerDisplay();
@@ -667,6 +680,8 @@ document
       storageKey,
       JSON.stringify(puzzles)
     );
+
+
   
     // -------------------------
     // Calculate metadata
@@ -687,9 +702,11 @@ document
       lastSolveTime: null,
       bestTime: null,
       lastSolveDate: null,
-  
       averageAccuracy: null,
-  
+      isPaused: 0,
+      pausedAt: 0,
+      pausedTime: 0,
+      pausedSolveTrackerArray: [],
       accuracyArray: [],
       solveTimeArray: []
     };
@@ -697,16 +714,20 @@ document
     // -------------------------
     // Update puzzleSets
     // -------------------------
-  
-    const puzzleSets =
-      JSON.parse(
-        localStorage.getItem("puzzleSets")
-      ) || [];
-  
-    const existingIndex =
-      puzzleSets.findIndex(
+    let puzzleSets = [];
+    console.log(localStorage.getItem('puzzleSets'));
+    if (localStorage.getItem('puzzleSets') != 'undefined' && localStorage.getItem('puzzleSets') != null) {
+      puzzleSets =
+      JSON.parse(localStorage.getItem("puzzleSets"));
+    }
+    console.log(puzzleSets);
+    let existingIndex = -1;
+    if(puzzleSets) {
+      existingIndex =
+        puzzleSets.findIndex(
         s => s.SetId === name
       );
+    }
   
     if (existingIndex >= 0) {
       puzzleSets[existingIndex] = {
@@ -897,6 +918,11 @@ async function endPuzzleTrainer () {
     row.bestTime = row.bestTime ? Math.min(row.bestTime, solveTime) : solveTime;
     row.lastSolveDate = new Date().toLocaleDateString("en-GB");
 
+    row.pausedAt = 0;
+    row.isPaused = 0;
+    row.pausedTime = 0;
+    row.pausedSolveTracker = [];
+
     const accuracyArr = row.accuracyArray || [];
     const timeArr = row.solveTimeArray || [];
 
@@ -1052,6 +1078,16 @@ board.on("move:end", async ({ move }) => {
 function pausePuzzleTrainer () {
   ignoreMoveEvents = true;
   let timeTaken = stopTimer();
+
+  const puzzleSets = JSON.parse(localStorage.getItem("puzzleSets")) || [];
+  const row = puzzleSets.find(r => r.SetId === currentSetId);
+  if(row) {
+    row.isPaused = 1;
+    row.pausedAt = puzzleCount;
+    row.pausedTime = elapsedSeconds;
+    row.pausedSolveTracker = trackerData;
+    localStorage.setItem("puzzleSets", JSON.stringify(puzzleSets));
+  }
   pauseTimeTaken.textContent = timeTaken;
   pauseCorrect.textContent = trackerData.filter(item => item.status === "correct").length;
   pauseIncorrect.textContent = trackerData.filter(item => item.status === "wrong").length;
@@ -1139,6 +1175,15 @@ function skipPuzzle() {
   else trackerData.push({ rating: puzzles[puzzleCount].Rating, status: "skipped" });
   renderPuzzleTracker();
   puzzleCount++;
+
+  const puzzleSets = JSON.parse(localStorage.getItem("puzzleSets")) || [];
+  const row = puzzleSets.find(r => r.SetId === currentSetId);
+  if(row) {
+    row.pausedAt = puzzleCount;
+    row.pausedTime = elapsedSeconds;
+    row.pausedSolveTracker = trackerData;
+    localStorage.setItem("puzzleSets", JSON.stringify(puzzleSets));
+  }
   resetPuzzle();
 }
 
@@ -1148,6 +1193,15 @@ function skipPuzzle() {
     else trackerData.push({ rating: puzzles[puzzleCount].Rating, status: "wrong" });
     renderPuzzleTracker();
     puzzleCount++;
+
+    const puzzleSets = JSON.parse(localStorage.getItem("puzzleSets")) || [];
+    const row = puzzleSets.find(r => r.SetId === currentSetId);
+    if(row) {
+      row.pausedAt = puzzleCount;
+      row.pausedTime = elapsedSeconds;
+      row.pausedSolveTracker = trackerData;
+      localStorage.setItem("puzzleSets", JSON.stringify(puzzleSets));
+    }
     resetPuzzle();
   }
 
@@ -1317,7 +1371,7 @@ async function activateScreen(screen) {
 }
 async function loadPuzzleSets() {
 
-  puzzleSets = JSON.parse(localStorage.getItem("puzzleSets")) || [];
+  puzzleSets = JSON.parse(localStorage.getItem("puzzleSets") || '[]');
 
   puzzleSets = puzzleSets.map(set => ({
     ...set,
@@ -1448,6 +1502,10 @@ function renderPuzzleSetCards() {
     
           <span class="date-text">
             ${set.lastSolveDate || "—"}
+          </span>
+
+          <span class="date-text">
+            ${set.isPaused?"PAUSED":"-"}
           </span>
     
           <button
@@ -1937,15 +1995,3 @@ function deleteSet(setId) {
   
 }
 
-
-// document.getElementById("createSetBtn").addEventListener("click", () => {
-//   const puzzleId = "00008"; // your puzzle ID
-
-//   const url = new URL("puzzle.html", window.location.origin);
-//   url.searchParams.set("puzzleId", puzzleId);
-
-//   window.open(url.toString(), "_blank");
-// });
-
-// localStorage.clear();
-// startPuzzleSet("puzzles");
