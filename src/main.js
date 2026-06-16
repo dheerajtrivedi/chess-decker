@@ -306,6 +306,10 @@ pauseScreen.innerHTML = `
         <span class="material-symbols-outlined">play_arrow</span>
       </button>
 
+      <button id="returnToDashboard3" class="round-btn">
+        <span class="material-symbols-outlined">stop</span>
+      </button>
+
       <button id="restartBtn2" class="round-btn">
         <span class="material-symbols-outlined">refresh</span>
       </button>
@@ -1091,8 +1095,12 @@ document
   .getElementById("startBtn2")
   .addEventListener("click", resumePuzzleTrainer);
 
-  document
+document
   .getElementById("returnToDashboard")
+  .addEventListener("click", returnToDashboard);
+
+document
+  .getElementById("returnToDashboard3")
   .addEventListener("click", returnToDashboard);
 
 
@@ -1392,9 +1400,9 @@ function renderPuzzleSetCards() {
       : `<div class="sparkline-placeholder">—</div>`;
 
       return `
-      <article class="puzzle-card" data-setId="${set.SetId}">
+      <article class="puzzle-card" >
     
-        <div class="card-header">
+        <div class="card-header" data-setId="${set.SetId}">
           <div>
             <div class="set-id">${set.SetId}</div>
             <div class="set-meta">
@@ -1462,7 +1470,7 @@ function renderPuzzleSetCards() {
   //   });
   // });
 
-  document.querySelectorAll(".puzzle-card").forEach(card => {
+  document.querySelectorAll(".card-header").forEach(card => {
     card.addEventListener("click", () => {
       console.log(card.dataset.setid);
       renderSetStatistics(card.dataset.setid);
@@ -1700,7 +1708,7 @@ function renderSetStatistics(setID) {
               <div class="table-title">Puzzle List </div>
               <div class="table-head">
                   <div class="table-head-row">
-                    <div>ID</div>
+                    <div>#</div>
                     <div>Rating</div>
                     <div>Themes</div>
                   </div>
@@ -1710,12 +1718,12 @@ function renderSetStatistics(setID) {
 
                   ${puzzles
                   .map(
-                      (p) => `
+                      (p, index) => `
                       <div
                           class="table-row"
                           data-puzzleid="${p.PuzzleId}"
                       >
-                          <div>${p.PuzzleId}</div>
+                          <div>${index+1}</div>
                           <div>${p.Rating}</div>
                           <div class="setstat-theme-card">${ JSON.parse(p.Themes).map(id => `<div class="themeItem">${themeMap[id] || id}</div>`).join("") || ""} </div>
                       </div>
