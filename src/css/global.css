@@ -84,8 +84,6 @@ body {
 	background: #212121;
 	box-shadow: 0px 15px 10px rgb(25, 25, 25),
 				0px -5px 10px rgb(40, 40, 40);
-
-
 	transition:
 		transform .15s ease,
 		box-shadow .15s ease;
@@ -146,6 +144,7 @@ body {
     
     
 	background: #212121;
+	
     box-shadow: 0px 1px 1px rgb(25, 25, 25),
 				0px -1px 0px rgb(40, 40, 40);
 	transition:
@@ -160,6 +159,18 @@ body {
     box-shadow: 0px 9px 6px rgb(25, 25, 25),
 				0px -2px 4px rgb(40, 40, 40);
 }
+
+.round-btn.delete:hover {
+	/* background: #212121;
+	box-shadow: 0px 15px 10px rgb(25, 25, 25),
+				0px -5px 10px rgb(40, 40, 40); */
+
+	background: linear-gradient(145deg, #f95656, #d24848);
+	box-shadow: 0px 15px 10px rgb(25, 25, 25),
+				0px -1px 10px #ff5c5c;
+	
+}
+
 .material-symbols-outlined.small-size {
   font-size: 18px;
   font-variation-settings:

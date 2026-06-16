@@ -174,6 +174,8 @@ const puzzleScreen = document.getElementById("puzzleScreen");
 const summaryScreen = document.getElementById("summaryScreen");
 const pauseScreen = document.getElementById("pauseScreen");
 const dashboardScreen = document.getElementById("dashboardScreen");
+const setStatScreen = document.getElementById("setStatScreen");
+
 
 puzzleScreen.innerHTML = `
   <div class="layout">
@@ -1323,7 +1325,6 @@ async function loadPuzzleSets() {
 
   renderPuzzleSetCards();
   document.querySelectorAll(".start-btn").forEach(btn => {
-
     btn.addEventListener("click", () => {
       startPuzzleSet(btn.dataset.setId);
     });
@@ -1361,10 +1362,7 @@ function renderPuzzleSetCards() {
   };
 
   grid.innerHTML = puzzleSets.map(set => {
-
     // const times = set.solveTimeArray || [];
-
-
     const times = Array.isArray(set.solveTimeArray)
       ? set.solveTimeArray
       : parseArray(set.solveTimeArray);
@@ -1394,7 +1392,7 @@ function renderPuzzleSetCards() {
       : `<div class="sparkline-placeholder">—</div>`;
 
       return `
-      <article class="puzzle-card">
+      <article class="puzzle-card" data-setId="${set.SetId}">
     
         <div class="card-header">
           <div>
@@ -1454,9 +1452,24 @@ function renderPuzzleSetCards() {
     
       </article>
     `;
-      
 
   }).join("");
+  // document
+  // .querySelectorAll(".puzzle-card")
+  // .forEach((row) => {
+  //   row.addEventListener("click", () => {
+  //     renderSetStatistics(row.dataset.setId);
+  //   });
+  // });
+
+  document.querySelectorAll(".puzzle-card").forEach(card => {
+    card.addEventListener("click", () => {
+      console.log(card.dataset.setid);
+      renderSetStatistics(card.dataset.setid);
+    });
+  
+  });
+
   console.log("Dashboard Render Complete");
 }
 
@@ -1466,15 +1479,14 @@ function openPuzzle(puzzleID) {
   console.log(puzzleID);
 }
 
-function renderSetStatistics() {
+function renderSetStatistics(setID) {
+  console.log(setID);
   const themeMap = Object.values(CHESS_THEMES)
     .flatMap(category => category.themes)
     .reduce((map, theme) => ({ ...map, [theme.id]: theme.label }), {});
 
   activateScreen(setStatScreen)
-  let setID = 'ABCD1';
-  const container = document.getElementById("app");
-
+  // let setID = 'ABCD1';
   const puzzleSets =
     JSON.parse(localStorage.getItem("puzzleSets")) || [];
 
@@ -1490,7 +1502,7 @@ function renderSetStatistics() {
     );
 
   if (!set) {
-    container.innerHTML = `<div>Set not found</div>`;
+    setStatScreen.innerHTML = `<div>Set not found</div>`;
     return;
   }
 
@@ -1552,131 +1564,138 @@ function renderSetStatistics() {
     time: solveTimeArray[i] ?? null,
   }));
 
-  container.innerHTML = `
+  setStatScreen.innerHTML = `
     <div class="modal-overlay">
+      
       <div class="setStatistics">
-          <div class="modal-header">
-            <h2>-</h2>
-            <button id="returnToDashboard2" class="small-flat-btn">
-              <span class="material-symbols-outlined small-size">
-                close_small
-              </span>
-            </button>
+        <div class="modal-header">
+          <div>
+              <div class="set-id">${set.SetId}</div>
+              <div class="set-meta">${puzzleCount} Puzzles</div>
           </div>
-          <div class="card-header">
-              <div>
-                  <div class="set-id">${set.SetId}</div>
-                  <div class="set-meta">${puzzleCount} Puzzles</div>
+          <button id="returnToDashboard2" class="small-flat-btn">
+            <span class="material-symbols-outlined small-size">
+              close_small
+            </span>
+          </button>
+        </div>
+        <div class = "twocol-setstat">
+          <div class ="stats-section">
+            <div class="setstat-card">
+                <div class="stat-item">
+                    <div class="label">Accuracy</div>
+                    <div class="value">
+                        ${
+                            averageAccuracy != null
+                            ? `${Math.round(
+                                averageAccuracy * 100
+                                )}%`
+                            : "-"
+                        }
+                    </div>
+                </div>
+
+                <div class="stat-item">
+                    <div class="label">Rating</div>
+                    <div class="value">${avgRating}</div>
+                </div>
+
+                <div class="stat-item">
+                    <div class="label">Cycles</div>
+                    <div class="value">${solveTimeArray.length}</div>
+                </div>
+
+                <div class="stat-item">
+                    <div class="label">Last Solve</div>
+                    <div class="value">
+                        ${set.lastSolveDate ?? "-"}
+                    </div>
+                </div>
+
+            </div>  
+            <div class="setstat-card">
+              <div class = "setstat-solve-card">
+                <div class="setstat-solve-title">
+                  <div class="set-id">Last Three Solves</div>
+                </div>
+
+                <div class="card-stats">
+
+                    ${
+                        lastThree.length
+                        ? lastThree
+                            .map(
+                                (s) => `
+                                <div class="stat-item">
+                                    <div class = "label">Attempt #${s.attempt}</div>
+                                    <div class = "value"><span class="material-symbols-outlined small-icon">target</span>: ${s.accuracy}%</div>
+                                    <div class = "value"><span class="material-symbols-outlined small-icon">timer</span>: ${s.time}s</div>
+                                </div>
+                                `
+                            )
+                            .join("")
+                        : `<div class="emptyState">No solves yet</div>`
+                    }
+
+                </div>
               </div>
-              <div class="date-text"> ${set.lastSolveDate ?? "-"} </div>
-          </div>
-          <div class="card-stats">
-              <div class="stat-item">
-                  <div class="label">Average Accuracy</div>
-                  <div class="value">
-                      ${
-                          averageAccuracy != null
-                          ? `${Math.round(
-                              averageAccuracy * 100
-                              )}%`
-                          : "-"
-                      }
-                  </div>
-              </div>
+              <div class = "setstat-solve-card">
+                <div class="setstat-solve-title"">
 
-              <div class="stat-item">
-                  <div class="label">Average Rating</div>
-                  <div class="value">${avgRating}</div>
-              </div>
+                    <div class="set-id">
+                        Best Solve
+                    </div>
 
-              <div class="stat-item">
-                  <div class="label">Last Solve</div>
-                  <div class="value">
-                      ${set.lastSolveDate ?? "-"}
-                  </div>
-              </div>
+                </div>
 
-          </div>  
-          <hr>
-          <div class="setstat-card">
-            <div class = "setstat-solve-card">
-              <div class="setstat-solve-title">
-                <div class="set-id">Last Three Solves</div>
-              </div>
+                <div class="card-stats best-solve">
 
-              <div class="card-stats">
-
-                  ${
-                      lastThree.length
-                      ? lastThree
-                          .map(
-                              (s) => `
-                              <div class="stat-item">
-                                  <div class = "label">Attempt #${s.attempt}</div>
-                                  <div class = "value">Accuracy: ${s.accuracy}%</div>
-                                  <div class = "value">Time: ${s.time}s</div>
-                              </div>
-                              `
-                          )
-                          .join("")
-                      : `<div class="emptyState">No solves yet</div>`
-                  }
-
-              </div>
-            </div>
-            <div class = "setstat-solve-card">
-              <div class="setstat-solve-title"">
-
-                  <div class="set-id">
-                      Best Solve
-                  </div>
-
-              </div>
-
-              <div class="card-stats best-solve">
-
-                      ${
-                      bestSolve
-                          ? `
-                              <div class="stat-item">
-                                <div class = "label">Attempt #${bestSolve.attempt}</div>
-                                <div class = "value highlight">Accuracy: ${bestSolve.accuracy}%</div>
-                                <div class = "value">Time: ${bestSolve.time}s</div>
-                              </div>
-                          `
-                          : `<div class="emptyState">No solves yet</div>`
-                      }
-
-                      ${
-                        fastSolve
+                        ${
+                        bestSolve
                             ? `
                                 <div class="stat-item">
-                                  <div class = "label">Attempt #${fastSolve.attempt}</div>
-                                  <div class = "value">Accuracy: ${fastSolve.accuracy}%</div>
-                                  <div class = "value highlight">Time: ${fastSolve.time}s</div>
+                                  <div class = "label">Attempt #${bestSolve.attempt}</div>
+                                  <div class = "value highlight"><span class="material-symbols-outlined small-icon">target</span>: ${bestSolve.accuracy}%</div>
+                                  <div class = "value"><span class="material-symbols-outlined small-icon">timer</span>: ${bestSolve.time}s</div>
                                 </div>
                             `
                             : `<div class="emptyState">No solves yet</div>`
                         }
 
+                        ${
+                          fastSolve
+                              ? `
+                                  <div class="stat-item">
+                                    <div class = "label">Attempt #${fastSolve.attempt}</div>
+                                    <div class = "value"><span class="material-symbols-outlined small-icon">target</span>: ${fastSolve.accuracy}%</div>
+                                    <div class = "value highlight"><span class="material-symbols-outlined small-icon">timer</span>: ${fastSolve.time}s</div>
+                                  </div>
+                              `
+                              : `<div class="emptyState">No solves yet</div>`
+                          }
+
+                </div>
               </div>
             </div>
+
+            <div class="stats-chart-container">
+
+                <div class="setstat-solve-title"">
+
+                    <div class="set-id">
+                        Accuracy & Time
+                    </div>
+
+                </div>
+
+                <canvas
+                id="setStatisticsChart"
+                class="statisticsChart"
+                ></canvas>
+
+            </div>
+
           </div>
-
-          <div class="statsSection hide">
-
-              <div class="sectionTitle">
-                  Accuracy vs Solve Time
-              </div>
-
-              <canvas
-              id="setStatisticsChart"
-              class="statisticsChart"
-              ></canvas>
-
-          </div>
-
-
           <div class="puzzleTable">
               <div class="table-title">Puzzle List </div>
               <div class="table-head">
@@ -1707,10 +1726,40 @@ function renderSetStatistics() {
               </div>
 
           </div>
-
+        </div>
+        <div class ="modal-footer">
+            <button
+              id="deleteset-btn"
+              class="round-btn delete"
+            >
+              <span class="material-symbols-outlined">
+                delete
+              </span>
+            </button>
+            <button
+              id="start-btn2"
+              class = "round-btn"
+              data-set-id="${set.SetId}"
+            >
+              <span class="material-symbols-outlined">
+                play_arrow
+              </span>
+            </button>
+            
+          </div>
       </div>
     </div>
   `;
+
+  console.log(set.SetId);
+
+  document.getElementById("returnToDashboard2").addEventListener("click", returnToDashboard);
+  document.getElementById("start-btn2").addEventListener("click", () => {startPuzzleSet(set.SetId)});
+  document.getElementById("deleteset-btn").addEventListener("click", () => {deleteSet(set.SetId)});
+  
+
+
+  
 
   if (
     typeof Chart !== "undefined" &&
@@ -1791,7 +1840,29 @@ document
   });
 }
 
+function deleteSet(setId) {
+  if (!confirm(`Delete set "${setId}"?`)) {
+    return;
+  }
 
+  // Remove puzzle list
+  localStorage.removeItem(`puzzles_${setId}`);
+
+  // Remove set entry from puzzleSets
+  const puzzleSets =
+    JSON.parse(localStorage.getItem("puzzleSets")) || [];
+
+  const updatedSets = puzzleSets.filter(
+    (set) => String(set.SetId) !== String(setId)
+  );
+
+  localStorage.setItem(
+    "puzzleSets",
+    JSON.stringify(updatedSets)
+  );
+  returnToDashboard();
+  
+}
 
 
 // document.getElementById("createSetBtn").addEventListener("click", () => {
