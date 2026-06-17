@@ -320,6 +320,7 @@ pauseScreen.innerHTML = `
 `;
 
 dashboardScreen.innerHTML = `
+<div class = "sign"> Made by DT <span class="material-symbols-outlined very-small-icon">favorite</span> </div>
 <div class="dashboard-container">
 
   <div class="dashboard-header">
@@ -333,8 +334,13 @@ dashboardScreen.innerHTML = `
     
     <div id="modalRoot"></div>
   </div>
+  <div id="peckerSetGrid" class="puzzle-set-grid"></div>
   <div id="puzzleSetGrid" class="puzzle-set-grid"></div>
 </div>
+
+<button class="dashboard-primary-btn" id="createPeckerSetBtn">
+  <span class="material-symbols-outlined">raven</span>
+</button>
 <button class="dashboard-primary-btn" id="createSetBtn">
 +
 </button>
@@ -386,6 +392,13 @@ async function startPuzzleSet(setID) {
     trackerData = row.pausedSolveTracker;
     
   }
+  else {
+    if (row.pecker) {
+      const now = new Date();
+      console.log(now);
+      row.cycle_start_date = now;
+    }
+  }
   row.isPaused = 1;
   localStorage.setItem("puzzleSets", JSON.stringify(puzzleSets_complete));
 
@@ -423,11 +436,206 @@ document
   .getElementById("createSetBtn")
   .addEventListener("click", openPuzzleSetModal);
 
-// document
-//   .getElementById("createSetBtn")
-//   .addEventListener("click", renderSetStatistics);
+document
+  .getElementById("createPeckerSetBtn")
+  .addEventListener("click", openPeckerSetModal);
 
-  async function openPuzzleSetModal() {
+
+async function openPeckerSetModal() {
+
+  const ratingInfo = db.exec(`
+    SELECT
+      MIN(Rating),
+      MAX(Rating)
+    FROM puzzles
+  `)[0];
+
+  const minRating = Number(ratingInfo.values[0][0]);
+  const maxRating = Number(ratingInfo.values[0][1]);
+
+  document.getElementById("modalRoot").innerHTML = `
+    <div class="modal-overlay">
+
+      <div class="create-set-card">
+
+        <div class="modal-header">
+          <h2 class = "pecker">CREATE WOODPEKCER STYLE SET</h2>
+          <button id="cancelCreate" class="small-flat-btn">
+            <span class="material-symbols-outlined small-size">
+            close
+            </span>
+          </button>
+        </div>
+
+        <input
+          id="pecker-setName"
+          class="set-name-input"
+          placeholder="SET NAME"
+        />
+
+        <div class="slider-section">
+
+          <div class="slider-row">
+            <div class = "slider-label">
+              <div class="slider-label-label">
+                Puzzles
+              </div>
+
+              <div
+                class="slider-label-value"
+                id="countValue"
+              >
+                100
+              </div>
+            </div>
+          <div class="range-slider">
+            <input
+              id="pecker-puzzleCount"
+              type="range"
+              min="300"
+              max="2000"
+              value="500"
+              step="20"
+            />
+          </div>
+          </div>
+
+          <div class="slider-row">
+            <div class = "slider-label">
+              <div class="slider-label-label">
+                Rating
+              </div>
+
+              <div
+                class="slider-label-value"
+                id="ratingValue"
+              >
+                ${minRating} – ${maxRating}
+              </div>
+            </div>
+
+            <div class="range-slider">
+              <input
+                id="pecker-minRating"
+                type="range"
+                min="${minRating}"
+                max="${maxRating}"
+                value="${minRating}"
+                step="2"
+              />
+
+              <input
+                id="pecker-maxRating"
+                type="range"
+                min="${minRating}"
+                max="${maxRating}"
+                value="${maxRating}"
+                step="2"
+              />
+            </div>
+
+          </div>
+
+        </div>
+        
+        <div class ="modal-footer">
+          <div
+            id="foundCount"
+            class="found-pill"
+          >
+            Calculating...
+          </div>
+          <button
+            id="confirmCreate"
+            class="round-btn"
+          >
+            +
+          </button>
+          
+        </div>
+        </div>
+
+    </div>
+  `;
+
+  const countSlider =
+    document.getElementById("pecker-puzzleCount");
+
+  const minSlider =
+    document.getElementById("pecker-minRating");
+
+  const maxSlider =
+    document.getElementById("pecker-maxRating");
+
+  function updateCount() {
+
+    let min = Number(minSlider.value);
+    let max = Number(maxSlider.value);
+
+    if (min > max) {
+      [min, max] = [max, min];
+    }
+
+    document.getElementById(
+      "countValue"
+    ).textContent = countSlider.value;
+
+    document.getElementById(
+      "ratingValue"
+    ).textContent = `${min} – ${max}`;
+
+    const result = db.exec(`
+      SELECT COUNT(*)
+      FROM puzzles
+      WHERE Rating BETWEEN
+        ${min}
+        AND
+        ${max}
+    `);
+
+    const total = result[0].values[0][0];
+
+    document.getElementById(
+      "foundCount"
+    ).textContent =
+      `${total.toLocaleString()} puzzles found`;
+  }
+
+  countSlider.addEventListener(
+    "input",
+    updateCount
+  );
+
+  minSlider.addEventListener(
+    "input",
+    updateCount
+  );
+
+  maxSlider.addEventListener(
+    "input",
+    updateCount
+  );
+
+  updateCount();
+
+  document
+    .getElementById("cancelCreate")
+    .addEventListener("click", () => {
+      document.getElementById(
+        "modalRoot"
+      ).innerHTML = "";
+    });
+
+  document
+    .getElementById("confirmCreate")
+    .addEventListener(
+      "click",
+      createPeckerSet
+    );
+}
+
+
+async function openPuzzleSetModal() {
 
     const ratingInfo = db.exec(`
       SELECT
@@ -481,6 +689,7 @@ document
                 min="10"
                 max="1000"
                 value="100"
+                step="5"
               />
             </div>
             </div>
@@ -506,7 +715,7 @@ document
                   min="${minRating}"
                   max="${maxRating}"
                   value="${minRating}"
-                  step="50"
+                  step="2"
                 />
   
                 <input
@@ -515,7 +724,7 @@ document
                   min="${minRating}"
                   max="${maxRating}"
                   value="${maxRating}"
-                  step="50"
+                  step="2"
                 />
               </div>
   
@@ -618,8 +827,7 @@ document
         createPuzzleSet
       );
   }
-  
-  // ------------------------
+
   // CREATE SET
   // ------------------------
   async function createPuzzleSet() {
@@ -681,7 +889,6 @@ document
       JSON.stringify(puzzles)
     );
 
-
   
     // -------------------------
     // Calculate metadata
@@ -698,6 +905,7 @@ document
       SetId: name,
       AverageRating: averageRating,
       NumberPuzzle: puzzles.length,
+      pecker:0,
   
       lastSolveTime: null,
       bestTime: null,
@@ -714,6 +922,122 @@ document
     // -------------------------
     // Update puzzleSets
     // -------------------------
+    let puzzleSets = [];
+    console.log(localStorage.getItem('puzzleSets'));
+    if (localStorage.getItem('puzzleSets') != 'undefined' && localStorage.getItem('puzzleSets') != null) {
+      puzzleSets =
+      JSON.parse(localStorage.getItem("puzzleSets"));
+    }
+    console.log(puzzleSets);
+    let existingIndex = -1;
+    if(puzzleSets) {
+      existingIndex =
+        puzzleSets.findIndex(
+        s => s.SetId === name
+      );
+    }
+  
+    if (existingIndex >= 0) {
+      puzzleSets[existingIndex] = {
+        ...puzzleSets[existingIndex],
+        ...newSet
+      };
+    } else {
+      puzzleSets.push(newSet);
+    }
+  
+    localStorage.setItem(
+      "puzzleSets",
+      JSON.stringify(puzzleSets)
+    );
+  
+    document.getElementById("modalRoot").innerHTML = "";
+  
+    if (typeof loadPuzzleSets === "function") {
+      loadPuzzleSets();
+    }
+  }
+
+  async function createPeckerSet() {
+
+    const name = document.getElementById("pecker-setName").value.trim();
+  
+    if (!name) {
+      alert("Enter a set name");
+      return;
+    }
+  
+    const count =
+      Number(document.getElementById("pecker-puzzleCount").value);
+  
+    const minRating =
+      Number(document.getElementById("pecker-minRating").value);
+  
+    const maxRating =
+      Number(document.getElementById("pecker-maxRating").value);
+  
+    const result = db.exec(`
+      SELECT *
+      FROM puzzles
+      WHERE Rating BETWEEN
+        ${minRating}
+        AND
+        ${maxRating}
+      ORDER BY RANDOM()
+      LIMIT ${count}
+    `);
+  
+    if (!result.length) {
+      alert("No puzzles found");
+      return;
+    }
+  
+    const cols = result[0].columns;
+    const rows = result[0].values;
+  
+    const puzzles = rows.map(row => {
+      const obj = {};
+  
+      cols.forEach((col, i) => {
+        obj[col] = row[i];
+      });
+  
+      return obj;
+    });
+  
+    const storageKey = `puzzles_${name}`;
+  
+    localStorage.setItem(
+      storageKey,
+      JSON.stringify(puzzles)
+    );
+  
+    const averageRating = Math.round(
+      puzzles.reduce(
+        (sum, p) => sum + Number(p.Rating || 0),
+        0
+      ) / puzzles.length
+    );
+  
+    const newSet = {
+      SetId: name,
+      AverageRating: averageRating,
+      NumberPuzzle: puzzles.length,
+      pecker: 1,
+      cycle: 1,
+      cycle_start_date: null,
+      lastSolveTime: null,
+      bestTime: null,
+      lastSolveDate: null,
+      averageAccuracy: null,
+      isPaused: 0,
+      pausedAt: 0,
+      pausedTime: 0,
+      cycleTimeArray: [],
+      pausedSolveTrackerArray: [],
+      accuracyArray: [],
+      solveTimeArray: []
+    };
     let puzzleSets = [];
     console.log(localStorage.getItem('puzzleSets'));
     if (localStorage.getItem('puzzleSets') != 'undefined' && localStorage.getItem('puzzleSets') != null) {
@@ -934,6 +1258,27 @@ async function endPuzzleTrainer () {
 
     row.averageAccuracy =
       accuracyArr.reduce((a, b) => a + b, 0) / accuracyArr.length;
+  }
+
+  if (row.pecker) {
+    const startDate = new Date(row.cycle_start_date);
+    const endDate = new Date();
+
+    const msLeft = endDate - startDate;
+
+    const days = Math.floor(msLeft / 86400000);
+    const hours = Math.floor((msLeft % 86400000) / 3600000);
+
+    const cycletimeTaken =
+      msLeft > 0
+        ? `${days}d ${hours}h`
+        : "ERROR"; 
+    const cycleTimeArr = row.cycleTimeArray || [];
+    cycleTimeArr.push(cycletimeTaken);
+
+    row.cycleTimeArray = cycleTimeArr;
+    row.cycle_start_date = null;
+    row.cycle++;
   }
 
   localStorage.setItem("puzzleSets", JSON.stringify(setStats));
@@ -1412,6 +1757,8 @@ function parseArray(value) {
 
 function renderPuzzleSetCards() {
 
+  const pecker_grid = document.getElementById("peckerSetGrid");
+
   const grid = document.getElementById("puzzleSetGrid");
 
   const formatTime = (seconds) => {
@@ -1423,110 +1770,245 @@ function renderPuzzleSetCards() {
     return `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
   };
 
-  grid.innerHTML = puzzleSets.map(set => {
-    // const times = set.solveTimeArray || [];
-    const times = Array.isArray(set.solveTimeArray)
-      ? set.solveTimeArray
-      : parseArray(set.solveTimeArray);
+  pecker_grid.innerHTML = puzzleSets.map(set => {
+    if (set.pecker) {
+      console.log(set);
 
-    const max = Math.max(...times, 1);
-    const min = Math.min(...times, 0);
+      const times = Array.isArray(set.solveTimeArray)
+        ? set.solveTimeArray
+        : parseArray(set.solveTimeArray);
 
+      const max = Math.max(...times, 1);
+      const min = Math.min(...times, 0);
 
+      let timeLeftString = "Not Started";
 
-    const sparkline = times.length > 1
-      ? `
-        <svg class="sparkline" viewBox="0 0 100 24" preserveAspectRatio="none">
-          <polyline
-            fill="none"
-            stroke="currentColor"
-            stroke-width="0.6"
-            points="${
-              times.map((v, i) => {
-                const x = (i / (times.length - 1)) * 100;
-                const y = 22 - ((v - min) / ((max - min) || 1)) * 18;
-                return `${x},${y}`;
-              }).join(" ")
-            }"
-          />
-        </svg>
-      `
-      : `<div class="sparkline-placeholder">—</div>`;
+      if (set.cycle > 5) {
+        timeLeftString = "<span class = 'mastery'> MASTERY </span>"
+      }
 
-      return `
-      <article class="puzzle-card" >
-    
-        <div class="card-header" data-setId="${set.SetId}">
-          <div>
-            <div class="set-id">${set.SetId}</div>
-            <div class="set-meta">
-              ${set.NumberPuzzle || 0} puzzles
+      if (set.cycle_start_date != null && set.cycle <= 5) {
+        let daysBetween = 0;
+
+        if (set.cycle === 1) daysBetween = 28;
+        else if (set.cycle === 2) daysBetween = 14;
+        else if (set.cycle === 3) daysBetween = 7;
+        else if (set.cycle === 4) daysBetween = 3;
+        else if (set.cycle === 5) daysBetween = 1;
+
+        const startDate = new Date(set.cycle_start_date);
+        const endDate = new Date(startDate.getTime() + daysBetween * 24 * 60 * 60 * 1000);
+  
+        const msLeft = endDate - new Date();
+  
+        const days = Math.floor(msLeft / 86400000);
+        const hours = Math.floor((msLeft % 86400000) / 3600000);
+  
+        timeLeftString =
+          msLeft > 0
+            ? `${days}d ${hours}h left`
+            : "OVERDUE"; 
+      }
+        return `
+        <article class="pecker puzzle-card" >
+      
+          <div class="card-header" data-setId="${set.SetId}">
+            <div>
+              <div class="set-id">${set.SetId}</div>
+              <div class="set-meta">
+                ${set.NumberPuzzle || 0} puzzles
+              </div>
+            </div>
+            <div class="woodpecker set-id">WOODPECKER SET</div>
+            <div class="rating-pill">
+              ${set.AverageRating || "—"}
             </div>
           </div>
-    
-          <div class="rating-pill">
-            ${set.AverageRating || "—"}
+      
+          <div class="card-stats">
+      
+            <div class="stat-item">
+              <span class="label">Cycle</span>
+              <span class="value">${set.cycle}</span>
+            </div>
+      
+            <div class="stat-item">
+              <span class="label">Time Left</span>
+              <span class="value">${timeLeftString}</span>
+            </div>
+      
+            <div class="stat-item">
+              <span class="label">Accuracy</span>
+              <span class="value">
+                ${Math.round(Number(set.averageAccuracy) * 100)}%
+              </span>
+            </div>
+      
           </div>
-        </div>
-    
-        <div class="card-stats">
-    
-          <div class="stat-item">
-            <span class="label">Best</span>
-            <span class="value">${formatTime(set.bestTime)}</span>
+          <div class="woodpecker-section-header"> <span class = "set-id"> ATTEMPTS: <span> </div>
+          <div class="woodpecker-section">
+            <div id = "attempt1" class = "woodpecker-section-item">
+              <div class="stat-item pecker">
+                <span class="label">Attempt 1</span>
+                <span class="value pecker">${set.cycleTimeArray[0] || '-'}</span>
+                <span class="value pecker">${Math.round(Number(set.accuracyArray[0])*100) || '~ '}%</span>
+                <span class="value pecker highlight">4 WEEKS CYCLE</span>
+              </div>
+            </div>
+            <div id = "attempt2" class = "woodpecker-section-item">
+              <div class="stat-item pecker">
+                <span class="label">Attempt 2</span>
+                <span class="value pecker">${set.cycleTimeArray[1] || '-'}</span>
+                <span class="value pecker">${Math.round(Number(set.accuracyArray[1])*100) || '~ '}%</span>
+                <span class="value pecker highlight">2 WEEKS CYCLE</span>
+              </div>
+            </div>
+            <div id = "attempt3" class = "woodpecker-section-item">
+              <div class="stat-item pecker">
+                <span class="label">Attempt 3</span>
+                 <span class="value pecker">${set.cycleTimeArray[2] || '-'}</span>
+                <span class="value pecker">${Math.round(Number(set.accuracyArray[2])*100) || '~ '}%</span>
+                <span class="value pecker highlight">1 WEEK CYCLE</span>
+              </div>
+            </div>
+            <div id = "attempt4" class = "woodpecker-section-item">
+              <div class="stat-item pecker">
+                <span class="label">Attempt 4</span>
+                <span class="value pecker">${set.cycleTimeArray[3] || '-'}</span>
+                <span class="value pecker">${Math.round(Number(set.accuracyArray[3])*100) || '~ '}%</span>
+                <span class="value pecker highlight">3 DAYS CYCLE</span>
+              </div>
+            </div>
+              
+            <div id = "attempt5" class = "woodpecker-section-item">
+              <div class="stat-item pecker">
+                <span class="label">Attempt 5</span>
+                <span class="value pecker">${set.cycleTimeArray[4] || '-'}</span>
+                <span class="value pecker">${Math.round(Number(set.accuracyArray[4])*100) || '~ '}%</span>
+                <span class="value pecker highlight">1 DAY CYCLE</span>
+              </div>
+            </div>
           </div>
-    
-          <div class="stat-item">
-            <span class="label">Last</span>
-            <span class="value">${formatTime(set.lastSolveTime)}</span>
-          </div>
-    
-          <div class="stat-item">
-            <span class="label">Accuracy</span>
-            <span class="value">
-              ${
-                set.averageAccuracy != null
-                  ? `${Math.round(Number(set.averageAccuracy) * 100)}%`
-                  : "—"
-              }
+      
+          <div class="card-footer">
+      
+            <span class="date-text">
+              ${set.lastSolveDate || "—"}
             </span>
-          </div>
-    
-        </div>
-    
-        <div class="sparkline-section">
-          ${sparkline}
-        </div>
-    
-        <div class="card-footer">
-    
-          <span class="date-text">
-            ${set.lastSolveDate || "—"}
-          </span>
 
-          <span class="date-text">
-            ${set.isPaused?"PAUSED":"-"}
-          </span>
-    
-          <button
-            class="start-btn"
-            data-set-id="${set.SetId}"
-          >
-            ⏵
-          </button>
-        </div>
-    
-      </article>
-    `;
+            <span class="date-text">
+              ${set.isPaused?"PAUSED":"-"}
+            </span>
+      
+            <button
+              class="start-btn"
+              data-set-id="${set.SetId}"
+            >
+              ⏵
+            </button>
+          </div>
+      
+        </article>
+      `;
+    }
+  }).join("");
+
+  grid.innerHTML = puzzleSets.map(set => {
+    if(!set.pecker) {
+      const times = Array.isArray(set.solveTimeArray)
+        ? set.solveTimeArray
+        : parseArray(set.solveTimeArray);
+
+      const max = Math.max(...times, 1);
+      const min = Math.min(...times, 0);
+
+      const sparkline = times.length > 1
+        ? `
+          <svg class="sparkline" viewBox="0 0 100 24" preserveAspectRatio="none">
+            <polyline
+              fill="none"
+              stroke="currentColor"
+              stroke-width="0.6"
+              points="${
+                times.map((v, i) => {
+                  const x = (i / (times.length - 1)) * 100;
+                  const y = 22 - ((v - min) / ((max - min) || 1)) * 18;
+                  return `${x},${y}`;
+                }).join(" ")
+              }"
+            />
+          </svg>
+        `
+        : `<div class="sparkline-placeholder">—</div>`;
+
+        return `
+        <article class="puzzle-card" >
+      
+          <div class="card-header" data-setId="${set.SetId}">
+            <div>
+              <div class="set-id">${set.SetId}</div>
+              <div class="set-meta">
+                ${set.NumberPuzzle || 0} puzzles
+              </div>
+            </div>
+      
+            <div class="rating-pill">
+              ${set.AverageRating || "—"}
+            </div>
+          </div>
+      
+          <div class="card-stats">
+      
+            <div class="stat-item">
+              <span class="label">Best</span>
+              <span class="value">${formatTime(set.bestTime)}</span>
+            </div>
+      
+            <div class="stat-item">
+              <span class="label">Last</span>
+              <span class="value">${formatTime(set.lastSolveTime)}</span>
+            </div>
+      
+            <div class="stat-item">
+              <span class="label">Accuracy</span>
+              <span class="value">
+                ${
+                  set.averageAccuracy != null
+                    ? `${Math.round(Number(set.averageAccuracy) * 100)}%`
+                    : "—"
+                }
+              </span>
+            </div>
+      
+          </div>
+      
+          <div class="sparkline-section">
+            ${sparkline}
+          </div>
+      
+          <div class="card-footer">
+      
+            <span class="date-text">
+              ${set.lastSolveDate || "—"}
+            </span>
+
+            <span class="date-text">
+              ${set.isPaused?"PAUSED":"-"}
+            </span>
+      
+            <button
+              class="start-btn"
+              data-set-id="${set.SetId}"
+            >
+              ⏵
+            </button>
+          </div>
+      
+        </article>
+      `;
+    }
 
   }).join("");
-  // document
-  // .querySelectorAll(".puzzle-card")
-  // .forEach((row) => {
-  //   row.addEventListener("click", () => {
-  //     renderSetStatistics(row.dataset.setId);
-  //   });
-  // });
 
   document.querySelectorAll(".card-header").forEach(card => {
     card.addEventListener("click", () => {
