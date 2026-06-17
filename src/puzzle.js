@@ -219,7 +219,7 @@ async function initPuzzleDB() {
     locateFile: () => "/sql-wasm.wasm"
   });
 
-  const response = await fetch("public/lichess-puzzles.db");
+  const response = await fetch("/lichess-puzzles.db");
   const buffer = await response.arrayBuffer();
 
   db = new SQL.Database(new Uint8Array(buffer));
