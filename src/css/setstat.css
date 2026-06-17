@@ -47,8 +47,10 @@
 }
 
 .setStatistics {
-	width: 1200px;
+	max-width: 1200px;
 	padding: 25px 20px;
+	height: 98vh;
+	overflow-y: auto;
 	
 	display: flex;
 	flex-direction: column;
@@ -221,4 +223,17 @@
 	display: flex;
 	flex-direction: column;
 	gap:10px;
+}
+
+@media (max-width: 900px) {
+	.twocol-setstat{
+		display: flex;
+		flex-direction: column;
+	}
+	.table-head-row{
+		grid-template-columns: 40px 50px minmax(120px, 520px);
+	}	
+	.table-row{
+		grid-template-columns: 40px 50px minmax(120px, 520px);
+	}
 }
