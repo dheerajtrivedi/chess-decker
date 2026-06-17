@@ -517,19 +517,19 @@ async function openPeckerSetModal() {
               <input
                 id="pecker-minRating"
                 type="range"
-                min="${minRating}"
-                max="${maxRating}"
-                value="${minRating}"
-                step="2"
+                min="700"
+                max="2850"
+                value="1200"
+                step="50"
               />
 
               <input
                 id="pecker-maxRating"
                 type="range"
-                min="${minRating}"
-                max="${maxRating}"
-                value="${maxRating}"
-                step="2"
+                min="700"
+                max="2850"
+                value="1800"
+                step="50"
               />
             </div>
 
@@ -711,19 +711,19 @@ async function openPuzzleSetModal() {
                 <input
                   id="minRating"
                   type="range"
-                  min="${minRating}"
-                  max="${maxRating}"
-                  value="${minRating}"
-                  step="2"
+                  min="700"
+                  max="2850"
+                  value="1200"
+                  step="50"
                 />
   
                 <input
                   id="maxRating"
                   type="range"
-                  min="${minRating}"
-                  max="${maxRating}"
-                  value="${maxRating}"
-                  step="2"
+                  min="700"
+                  max="2850"
+                  value="1800"
+                  step="50"
                 />
               </div>
   

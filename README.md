@@ -2,6 +2,12 @@
 
 A modern chess puzzle trainer inspired by the **Woodpecker Method**, designed to improve pattern recognition through deliberate repetition and performance tracking.
 
+### 🚀 Live Demo
+
+**Play now:** https://chess-decker.onrender.com/
+
+---
+
 ## Features
 
 ### 🎯 Standard Puzzle Sets
@@ -21,6 +27,22 @@ For every training session, Chess Ԁecker tracks:
 * Historical performance across attempts
 
 This allows you to monitor improvement over time and identify strengths and weaknesses.
+
+---
+### Puzzle Database
+
+Chess Ԁecker uses puzzles sourced from the official Lichess puzzle database. (https://www.kaggle.com/datasets/lichess/chess-puzzles)
+
+The database contains hundreds of thousands of real tactical positions extracted from master and amateur games, covering a wide range of themes and rating levels, including:
+
+- Tactical motifs (forks, pins, skewers, discovered attacks, etc.)
+- Checkmate patterns
+- Endgames
+- Middlegame tactics
+- Defensive resources
+- Strategic combinations
+
+All puzzle generation happens locally in your browser, allowing fast set creation without requiring an internet connection after the application has been loaded.
 
 ---
 

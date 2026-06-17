@@ -210,29 +210,6 @@ border: 5px solid transparent;
 background-clip: content-box;
 }
 
-.sign {
-	display: flex;
-	/* align-items: center;
-	align-content: center; */
-
-	justify-content: center;
-	justify-items: center;
-
-	gap: 5px;
-	position: fixed;
-	top: 12px;
-	right: 20px;
-
-	border-radius: 10px;
-	font-size: 0.75rem;
-	color: #e0e0e0;
-	padding: 4px 8px;
-	font-family: "Doto", sans-serif;
-	background: #212121;
-	box-shadow: 3cap 3px 10px rgb(26, 26, 26),
-				-3px -3px 10px rgb(46, 46, 46);
-}
-
 .material-symbols-outlined.very-small-icon {
 	font-size: 15px;
 	font-variation-settings:
