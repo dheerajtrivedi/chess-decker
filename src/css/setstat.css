@@ -49,9 +49,9 @@
 .setStatistics {
 	max-width: 1200px;
 	padding: 25px 20px;
-	height: 98vh;
+	height: 90vh;
 	overflow-y: auto;
-	
+	margin: 30px;
 	display: flex;
 	flex-direction: column;
 
@@ -235,5 +235,9 @@
 	}	
 	.table-row{
 		grid-template-columns: 40px 50px minmax(120px, 520px);
+	}
+	.setStatistics {
+		height: 90vh;
+		overflow-y: auto;
 	}
 }

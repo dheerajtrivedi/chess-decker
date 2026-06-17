@@ -191,16 +191,16 @@
 
 	border-radius: 30px;
 	background: #212121;
-	box-shadow: 0px 15px 25px rgb(25, 25, 25),
+	box-shadow: 5px 15px 25px rgb(25, 25, 25),
 				0px -0px 30px rgb(40, 40, 40);
 }
 
 .puzzle-card.pecker  {
-	padding: 30px;
+	padding: 20px;
 	/* border-color: #ffe334; */
 	/* box-shadow:  3px 3px 30px #d7b42a,
 				-6px -6px 12px #fff438; */
-	box-shadow: 0px 15px 25px rgb(25, 25, 25),
+	box-shadow: 5px 15px 25px rgb(25, 25, 25),
 				0px -0px 30px rgb(40, 40, 40);
 	/* box-shadow:  0px 15px 25px rgb(25, 25, 25),
 				-1px -1px 10px #fff438; */
@@ -235,8 +235,8 @@
 	border-radius: 10px;
 	padding: 20px 10px;
 	background: #212121;
-	box-shadow: 0px 15px 25px rgb(25, 25, 25),
-				0px -0px 30px rgb(40, 40, 40);
+	box-shadow: 3px 3px 15px rgb(25, 25, 25),
+				1px -1px 30px rgb(40, 40, 40);
 }
 .stat-item.pecker {
 	gap: 7px;

@@ -92,6 +92,15 @@ Chess Ԁecker focuses on solving the **right puzzles repeatedly** until tactical
 Whether you're building custom tactical sets or following a structured Woodpecker cycle, Chess Ԁecker helps transform tactical knowledge into tactical intuition.
 
 ---
+## Acknowledgements
+
+Chess Ԁecker uses the excellent **SimpleChessBoard** library by 0Dexz0 for chessboard rendering and interaction.
+
+- SimpleChessBoard: https://github.com/0Dexz0/SimpleChessBoard
+
+Many thanks to the author for making the project open source.
+
+---
 
 ## License
 
