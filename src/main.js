@@ -10,7 +10,6 @@ import "./css/neo_summary.css";
 import "./css/setstat.css";
 
 import initSqlJs from "sql.js";
-import * as XLSX from "xlsx";
 
 const CHESS_THEMES = {
   tactics: {
@@ -1082,14 +1081,6 @@ async function loadPuzzles(setID) {
   if (cached) {
     return JSON.parse(cached);
   }
-
-  // Load Excel if not cached
-  const response = await fetch(`src/${setID}.xlsx`);
-  const arrayBuffer = await response.arrayBuffer();
-
-  const workbook = XLSX.read(arrayBuffer, { type: "array" });
-  const sheet = workbook.Sheets[workbook.SheetNames[0]];
-  const rows = XLSX.utils.sheet_to_json(sheet);
 
   // Save JSON to localStorage
   localStorage.setItem(storageKey, JSON.stringify(rows));
