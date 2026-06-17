@@ -5,10 +5,8 @@ import {
 } from "@0dexz0/simple-chess-board";
 import "./css/global.css";
 import "./css/puzzles.css";
-import "./css/neo_dashboard.css";
-// import "./css/dashboard.css";
-// import "./css/summary.css";
-import "./css/neo_summary.css";
+import "./css/dashboard.css";
+import "./css/summary.css";
 import "./css/setstat.css";
 
 import initSqlJs from "sql.js";

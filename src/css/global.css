@@ -6,7 +6,10 @@ body {
 	min-height: 100vh;
 	margin: 0;
 	background: #212121;
-	color: #fff;
+	color: #fafafa;
+/* 
+	background: #e0e0e0;
+	color: #212121; */
     font-family: 'Montserrat', sans-serif;
 }
 
@@ -41,29 +44,6 @@ body {
 	/* transform: translateY(0); */
 }
 
-.close-btn {
-	width: 30px;
-	height: 30px;
-	border: none;
-	background: transparent;
-	border-radius: 50%;
-	color: #9ea3b3;
-	cursor: pointer;
-}
-
-
-.shadow__btn {
-  background: rgb(0,140,255);
-  box-shadow: 0 0 25px rgb(0,140,255);
-}
-
-.shadow__btn:hover {
-  box-shadow: 0 0 5px rgb(0,140,255),
-              0 0 25px rgb(0,140,255),
-              0 0 50px rgb(0,140,255),
-              0 0 100px rgb(0,140,255);
-}
-
 .round-btn {
 	border-radius: 50%;
 	width: 50px;
@@ -79,9 +59,9 @@ body {
 	justify-content: center;
 
 	cursor: pointer;
-	color: #e0e0e0;
+	color: inherit;
 
-	background: #212121;
+	background: inherit;
 	box-shadow: 0px 15px 10px rgb(25, 25, 25),
 				0px -5px 10px rgb(40, 40, 40);
 	transition:
@@ -90,39 +70,8 @@ body {
 
 }
 
-.small-round-btn {
-	border-radius: 50%;
-	width: 30px;
-	height: 30px;
-	border: none;
-
-	font-size: 0.5 rem;
-	font-weight: 300;
-	line-height: 1;
-
-	display: flex;
-	align-items: center;
-	justify-content: center;
-
-	cursor: pointer;
-	color: #e0e0e0;
-    
-    border: 0.5px solid #282828;
-	background: #212121;
-	box-shadow: 0px 9px 6px rgb(25, 25, 25),
-				0px -2px 4px rgb(40, 40, 40);
-	transition:
-		transform .15s ease,
-		box-shadow .15s ease;
-
-}
-
 .round-btn:hover {
 	transform: translateY(-1px);
-}
-
-.small-round-btn:hover {
-	transform: translateY(-0.5px);
 }
 
 .small-flat-btn {
@@ -140,10 +89,10 @@ body {
 	justify-content: center;
 
 	cursor: pointer;
-	color: #e0e0e0;
+	color: inherit;
     
     
-	background: #212121;
+	background: inherit;
 	
     box-shadow: 0px 1px 1px rgb(25, 25, 25),
 				0px -1px 0px rgb(40, 40, 40);
@@ -161,10 +110,6 @@ body {
 }
 
 .round-btn.delete:hover {
-	/* background: #212121;
-	box-shadow: 0px 15px 10px rgb(25, 25, 25),
-				0px -5px 10px rgb(40, 40, 40); */
-
 	background: linear-gradient(145deg, #f95656, #d24848);
 	box-shadow: 0px 15px 10px rgb(25, 25, 25),
 				0px -1px 10px #ff5c5c;
@@ -204,10 +149,10 @@ body {
   }
   
 *::-webkit-scrollbar-thumb {
-background: rgb(30, 30, 30);
-border-radius: 999px;
-border: 5px solid transparent;
-background-clip: content-box;
+	background: rgb(30, 30, 30);
+	border-radius: 999px;
+	border: 5px solid transparent;
+	background-clip: content-box;
 }
 
 .material-symbols-outlined.very-small-icon {
