@@ -4,9 +4,7 @@ import { SimpleChessBoard } from "@0dexz0/simple-chess-board";
 import "./css/global.css";
 import "./css/puzzles.css";
 import "./css/one_puzzle.css";
-
 import initSqlJs from "sql.js";
-import * as XLSX from "xlsx";
 
 const params = new URLSearchParams(window.location.search);
 const puzzleId = params.get("puzzleId");
