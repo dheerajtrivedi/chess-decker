@@ -381,6 +381,7 @@ const setStatScreen = document.getElementById("setStatScreen");
 
 
 puzzleScreen.innerHTML = `
+<button id = "returnToDashboard4"><span class="material-symbols-outlined">arrow_back</span></button>
 <div class="layout">
   <div class = "card2">
     <div class="puzzleCounter" id="puzzleCounter"> 1 </div>
@@ -397,7 +398,7 @@ puzzleScreen.innerHTML = `
     </div>
     <div class="messageBox" id="messageBox">Loading puzzle...</div>
 
-    <div class = "trackerInfo">
+    <div class = "trackerInfo" id = "trackerInfo">
       <div id="puzzleTracker" class="puzzle-tracker"></div>
     </div>
     <div class="title" id="puzzleTitle">...</div>
@@ -1080,6 +1081,8 @@ async function createPuzzleSet() {
       return obj;
   });
 
+  puzzles.sort((a, b) => Number(a.Rating) - Number(b.Rating));
+
   // -------------------------
   // Store puzzle data
   // -------------------------
@@ -1207,6 +1210,8 @@ async function createPeckerSet() {
 
       return obj;
   });
+
+  puzzles.sort((a, b) => Number(a.Rating) - Number(b.Rating));
 
   const storageKey = `puzzles_${name}`;
 
@@ -1604,7 +1609,11 @@ function renderPuzzleTracker() {
       `;
         })
         .join("");
+    
+    const trackerInfo = document.getElementById("trackerInfo");
+    trackerInfo.scrollTop = trackerInfo.scrollHeight;
   }
+
   
 }
 
@@ -2699,6 +2708,10 @@ document
 
 document
   .getElementById("returnToDashboard3")
+  .addEventListener("click", returnToDashboard);
+
+  document
+  .getElementById("returnToDashboard4")
   .addEventListener("click", returnToDashboard);
 
 document
