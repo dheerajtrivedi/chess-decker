@@ -1115,7 +1115,7 @@ async function createPuzzleSet() {
       isPaused: 0,
       pausedAt: 0,
       pausedTime: 0,
-      pausedSolveTrackerArray: [],
+      pausedSolveTracker: [],
       accuracyArray: [],
       solveTimeArray: []
   };
@@ -1236,7 +1236,7 @@ async function createPeckerSet() {
       pausedAt: 0,
       pausedTime: 0,
       cycleTimeArray: [],
-      pausedSolveTrackerArray: [],
+      pausedSolveTracker: [],
       accuracyArray: [],
       solveTimeArray: []
   };
@@ -1576,29 +1576,33 @@ function resumePuzzleTrainer() {
 }
 /** Renders Puzzle Tracker */
 function renderPuzzleTracker() {
-  console.log(trackerData.length);
-  const container = document.getElementById("puzzleTracker");
+  console.log(trackerData)
+  if(trackerData != 'undefined' && trackerData != null) {
+    // console.log(trackerData.length);
+    const container = document.getElementById("puzzleTracker");
 
-  container.innerHTML = trackerData
-      .map((item) => {
-          const status = item.status; // "correct" | "wrong" | "skipped"
+    container.innerHTML = trackerData
+        .map((item) => {
+            const status = item.status; // "correct" | "wrong" | "skipped"
 
-          return `
-      <div class="tracker-item ${status}">
-        <div class="tracker-icon">
-          ${
-            status === "correct"
-              ? "✓"
-              : status === "wrong"
-              ? "✕"
-              : "−"
-          }
+            return `
+        <div class="tracker-item ${status}">
+          <div class="tracker-icon">
+            ${
+              status === "correct"
+                ? "✓"
+                : status === "wrong"
+                ? "✕"
+                : "−"
+            }
+          </div>
+          <div class="tracker-rating">${item.rating}</div>
         </div>
-        <div class="tracker-rating">${item.rating}</div>
-      </div>
-    `;
-      })
-      .join("");
+      `;
+        })
+        .join("");
+  }
+  
 }
 
 function skipPuzzle() {
@@ -1888,12 +1892,14 @@ function renderPuzzleSetCards() {
           const min = Math.min(...times, 0);
 
           let timeLeftString = "Not Started";
+          let puzzlesLeft = '-';
 
           if (set.cycle > 5) {
               timeLeftString = "<span class = 'mastery'> MASTERY </span>"
           }
 
           if (set.cycle_start_date != null && set.cycle <= 5) {
+              puzzlesLeft = set.NumberPuzzle - set.pausedAt;
               let daysBetween = 0;
 
               if (set.cycle === 1) daysBetween = 28;
@@ -1909,11 +1915,15 @@ function renderPuzzleSetCards() {
 
               const days = Math.floor(msLeft / 86400000);
               const hours = Math.floor((msLeft % 86400000) / 3600000);
+              const mins = Math.floor((msLeft % 3600000) / 60000);
+
+              let tls = days>0 ? `${days}d ${hours}h left`: `${hours}h ${mins}m left`;
+
 
               timeLeftString =
                   msLeft > 0 ?
-                  `${days}d ${hours}h left` :
-                  "OVERDUE";
+                  tls :
+                  "<span class='danger'> OVERDUE </span>";
           }
           return `
       <article class="pecker puzzle-card" >
@@ -1931,7 +1941,7 @@ function renderPuzzleSetCards() {
           </div>
         </div>
     
-        <div class="card-stats">
+        <div class="pecker card-stats">
     
           <div class="stat-item">
             <span class="label">Cycle</span>
@@ -1941,6 +1951,11 @@ function renderPuzzleSetCards() {
           <div class="stat-item">
             <span class="label">Time Left</span>
             <span class="value">${timeLeftString}</span>
+          </div>
+
+          <div class="stat-item">
+            <span class="label">PUzzles Left</span>
+            <span class="value">${puzzlesLeft}</span>
           </div>
     
           <div class="stat-item">
