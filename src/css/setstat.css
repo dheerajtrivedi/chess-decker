@@ -224,6 +224,11 @@
 	flex-direction: column;
 	gap:10px;
 }
+.emptyState {
+	font-size: 0.7rem;
+	text-transform: uppercase;
+	color: #a1a1aa;
+}
 
 @media (max-width: 900px) {
 	.twocol-setstat{

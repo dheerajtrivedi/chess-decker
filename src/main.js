@@ -530,8 +530,9 @@ dashboardScreen.innerHTML = `
   <div>
     <h1 class="dashboard-title">Chess Ԁecker</h1>
     <p class="dashboard-subtitle">
-      Master chess patterns faster with focused puzzle training and structured repetition.
+      Master chess patterns faster with focused puzzle training and structured repetition. All progress is stored locally. If you clear browser data/site storage your progress will be permanently lost.
     </p>
+    <p class="dashboard-note">  </p>
   </div>
 
   
@@ -1465,10 +1466,12 @@ async function endPuzzleTrainer() {
 
       const days = Math.floor(msLeft / 86400000);
       const hours = Math.floor((msLeft % 86400000) / 3600000);
+      const mins = Math.floor((msLeft % 3600000) / 60000);
+
 
       const cycletimeTaken =
           msLeft > 0 ?
-          `${days}d ${hours}h` :
+          (days>0 ? `${days}d ${hours}h`:`${hours}h ${mins}m`) :
           "ERROR";
       const cycleTimeArr = row.cycleTimeArray || [];
       cycleTimeArr.push(cycletimeTaken);
