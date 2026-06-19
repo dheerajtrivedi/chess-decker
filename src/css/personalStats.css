@@ -1,0 +1,43 @@
+.table-head-row.personal-stat{
+	display: grid;
+	grid-template-columns: repeat(4,1fr);
+	gap:5px;
+	align-items: center;
+	height: 50px;
+
+	color: #ffffff;
+	font-size: 0.8rem;
+	font-weight: 800;
+}
+
+.table-row.personal-stat{
+	display: grid;
+	grid-template-columns: repeat(4,1fr);
+	gap: 5px;
+	justify-content: center;
+	align-items: center;
+	min-height: 50px;
+	font-size: 0.70rem;
+	background: #212121;
+	border-radius: 5px;
+}
+
+.table-row.personal-stat div {
+    display:flex;
+	justify-content: center;
+}
+.table-head-row.personal-stat div {
+    display:flex;
+	justify-content: center;
+}
+
+.tracker-item.c .tracker-icon {
+	background: #8bb64a;
+}
+
+.tracker-item.w .tracker-icon {
+	background: #e15241;
+}
+.tracker-item.s .tracker-icon {
+	background: #e15241;
+}

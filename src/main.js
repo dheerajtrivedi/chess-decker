@@ -8,6 +8,8 @@ import "./css/puzzles.css";
 import "./css/dashboard.css";
 import "./css/summary.css";
 import "./css/setstat.css";
+import "./css/personalStats.css";
+
 
 import initSqlJs from "sql.js";
 
@@ -378,6 +380,7 @@ const summaryScreen = document.getElementById("summaryScreen");
 const pauseScreen = document.getElementById("pauseScreen");
 const dashboardScreen = document.getElementById("dashboardScreen");
 const setStatScreen = document.getElementById("setStatScreen");
+const personalStatScreen = document.getElementById("personalStatScreen");
 
 
 puzzleScreen.innerHTML = `
@@ -524,7 +527,7 @@ pauseScreen.innerHTML = `
 `;
 
 dashboardScreen.innerHTML = `
-<div class = "sign"> Made by DT <span class="material-symbols-outlined very-small-icon">favorite</span> </div>
+<div class = "sign" id = "sign"> Made by DT <span class="material-symbols-outlined very-small-icon">favorite</span> </div>
 <div class="dashboard-container">
 
 <div class="dashboard-header">
@@ -636,6 +639,7 @@ async function deactivateAllScreen() {
   puzzleScreen.classList.remove("active");
   dashboardScreen.classList.remove("active");
   setStatScreen.classList.remove("active");
+  personalStatScreen.classList.remove("active");
 }
 
 async function activateScreen(screen) {
@@ -1619,12 +1623,14 @@ function renderPuzzleTracker() {
 
 function skipPuzzle() {
   if (mistakes > 0) {
+    updatePersonalStatistics(puzzles[puzzleCount].PuzzleId,puzzles[puzzleCount].Rating, 'w')
     trackerData.push({
         rating: puzzles[puzzleCount].Rating,
         status: "wrong"
     });
   }
   else {
+    updatePersonalStatistics(puzzles[puzzleCount].PuzzleId,puzzles[puzzleCount].Rating, 's')
       trackerData.push({
         rating: puzzles[puzzleCount].Rating,
         status: "skipped"
@@ -1646,18 +1652,21 @@ function skipPuzzle() {
 
 function nextPuzzle() {
   if (mistakes === 0 && tookHint == 0) { 
+    updatePersonalStatistics(puzzles[puzzleCount].PuzzleId,puzzles[puzzleCount].Rating, 'c')
     trackerData.push({
         rating: puzzles[puzzleCount].Rating,
         status: "correct"
     });
   } 
   else if(mistakes === 0 && tookHint >= 0) {
+    updatePersonalStatistics(puzzles[puzzleCount].PuzzleId,puzzles[puzzleCount].Rating, 's')
     trackerData.push({
       rating: puzzles[puzzleCount].Rating,
       status: "skipped"
     });
   } 
   else { 
+    updatePersonalStatistics(puzzles[puzzleCount].PuzzleId,puzzles[puzzleCount].Rating, 'w')
     trackerData.push({
         rating: puzzles[puzzleCount].Rating,
         status: "wrong"
@@ -2605,6 +2614,383 @@ function returnToDashboard() {
   activateScreen(dashboardScreen);
 }
 
+/** Updates personal statistics with each rating solve */
+function updatePersonalStatistics(puzzleId, rating, status) {
+  // Load stats
+  const personalStats = JSON.parse(
+    localStorage.getItem("personalStats") || "[]"
+  );
+
+  // Load current rating
+  let personalRating = parseInt(
+    localStorage.getItem("personalRating") || "1400",
+    10
+  );
+
+  const currentRating = personalRating;
+
+  const diff = rating - personalRating;
+  const brackets = Math.ceil(Math.abs(diff) / 100);
+
+  if (status === "c") {
+    if (rating > personalRating) {
+      personalRating += brackets * 3;
+    }
+  } else if (status === "w") {
+    if (rating < personalRating) {
+      personalRating -= brackets * 3;
+    } else if (
+      rating > personalRating &&
+      rating <= personalRating + 100
+    ) {
+      personalRating -= 1;
+    }
+  } else if (status === "s") {
+    if (rating < personalRating) {
+      personalRating -= brackets;
+    }
+  }
+
+  // Store attempt
+  personalStats.push({
+    puzzleId,
+    rating,
+    currentRating,
+    status,
+    ratingChange: personalRating - currentRating,
+    timestamp: Date.now(),
+  });
+
+  localStorage.setItem(
+    "personalStats",
+    JSON.stringify(personalStats)
+  );
+
+  localStorage.setItem(
+    "personalRating",
+    personalRating
+  );
+
+  return personalRating;
+}
+
+function renderPersonalStat() {
+
+  personalStatScreen.classList.add("active");
+  const stats = JSON.parse(
+    localStorage.getItem("personalStats") || "[]"
+  );
+
+  const currentRating = parseInt(
+    localStorage.getItem("personalRating") || "1400",
+    10
+  );
+
+  const correct = stats.filter(
+    (s) => s.status === "c"
+  ).length;
+
+  const wrong = stats.filter(
+    (s) => s.status === "w"
+  ).length;
+
+  const skipped = stats.filter(
+    (s) => s.status === "s"
+  ).length;
+
+  const totalAttempts = stats.length;
+
+  const accuracy =
+    totalAttempts > 0
+      ? Math.round(
+          (correct / totalAttempts) * 100
+        )
+      : 0;
+
+  const uniquePuzzles = new Set(
+    stats.map((s) => s.puzzleId)
+  ).size;
+
+  const recentAttempts = [...stats]
+    .reverse()
+    .slice(0, 10);
+
+  personalStatScreen.innerHTML = `
+  <div class="modal-overlay">
+
+    <div class="setStatistics">
+
+      <div class="modal-header">
+        <div>
+            <div class="set-id">Personal Statistics</div>
+        </div>
+
+        <button
+          id="returnToDashboard5"
+          class="small-flat-btn"
+        >
+          <span class="material-symbols-outlined small-size">
+            close
+          </span>
+        </button>
+      </div>
+
+      <div class="twocol-setstat">
+
+        <div class="stats-section">
+
+          <div class="setstat-card">
+
+            <div class="stat-item">
+              <div class="label">Current Rating</div>
+              <div class="value">
+                ${currentRating}
+              </div>
+            </div>
+
+            <div class="stat-item">
+              <div class="label">Accuracy</div>
+              <div class="value">
+                ${accuracy}%
+              </div>
+            </div>
+
+            <div class="stat-item">
+              <div class="label">SEEN</div>
+              <div class="value">
+                ${totalAttempts}
+              </div>
+            </div>
+
+            <div class="stat-item">
+              <div class="label">UNIQUE</div>
+              <div class="value">
+                ${uniquePuzzles}
+              </div>
+            </div>
+
+          </div>
+
+          <div class="setstat-card">
+
+            <div class="stat-item">
+              <div class="label">Correct</div>
+              <div class="value">
+                ${correct}
+              </div>
+            </div>
+
+            <div class="stat-item">
+              <div class="label">Wrong</div>
+              <div class="value">
+                ${wrong}
+              </div>
+            </div>
+
+            <div class="stat-item">
+              <div class="label">Skipped</div>
+              <div class="value">
+                ${skipped}
+              </div>
+            </div>
+
+          </div>
+
+          <div class="stats-chart-container">
+
+            <div class="setstat-solve-title">
+              <div class="set-id">
+                Rating Progress
+              </div>
+            </div>
+
+            <canvas
+              id="personalRatingChart"
+              class="statisticsChart"
+            ></canvas>
+
+          </div>
+
+        </div>
+
+        <div class="puzzleTable">
+
+          <div class="table-title">
+            Recent Attempts
+          </div>
+
+          <div class="table-head">
+            <div class="table-head-row personal-stat">
+              <div>#</div>
+              <div>Puzzle</div>
+              <div>Result</div>
+              <div><span class="material-symbols-outlined personal-stat">trending_up</span></div>
+            </div>
+          </div>
+
+          <div class="table-body">
+
+            ${
+              recentAttempts.length
+                ? recentAttempts
+                    .map(
+                      (s, index) => `
+                    <div
+                      class="table-row personal-stat"
+                      data-puzzleid="${s.puzzleId}"
+                    >
+                      <div>${index + 1}</div>
+
+                      <div>
+                        ${s.rating}
+                      </div>
+
+                      <div class="tracker-item ${s.status}">
+                        <div class="tracker-icon">
+                          ${
+                            s.status === "c"
+                              ? "✓"
+                              : s.status === "w"
+                              ? "✕"
+                              : "−"
+                          }
+                        </div>
+                      </div>
+
+                      <div>
+                        ${
+                          s.ratingChange > 0
+                            ? "+" +
+                              s.ratingChange
+                            : s.ratingChange
+                        }
+                      </div>
+                    </div>
+                  `
+                    )
+                    .join("")
+                : `
+                <div class="emptyState">
+                  No attempts yet
+                </div>
+              `
+            }
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+  `;
+
+  // Chart
+  if (
+    typeof Chart !== "undefined" &&
+    stats.length
+  ) {
+    const labels = stats.map(
+      (_, i) => i + 1
+    );
+
+    let rating = 1400;
+
+    const ratingHistory = stats.map((s) => {
+      rating += s.ratingChange || 0;
+      return rating;
+    });
+
+    const ctx = document
+      .getElementById("personalRatingChart")
+      .getContext("2d");
+
+    window.personalRatingChart =
+      new Chart(ctx, {
+        type: "line",
+        data: {
+          labels,
+          datasets: [
+            {
+              label: "Rating",
+              data: ratingHistory,
+              tension: 0.3,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          layout: {
+              padding: {
+                  top: 0,
+              },
+          },
+          plugins: {
+              legend: {
+                  position: 'top',
+                  align: 'center',
+                  labels: {
+                      boxWidth: 10,
+                      font: {
+                          family: "'Montserrat', sans-serif",
+                          size: 12
+                      }
+                  }
+              }
+          },
+          elements: {
+              line: {
+                  borderWidth: 2,
+              },
+              point: {
+                  radius: 2,
+              },
+          },
+          interaction: {
+              mode: "index",
+              intersect: false,
+          },
+          scales: {
+              y: {
+                  type: "linear",
+                  position: "left",
+                  // min: 0,
+                  // max: 100,
+                  ticks: {
+                      font: {
+                          family: "'Montserrat', sans-serif",
+                          size: 12,
+                      },
+                  },
+                  title: {
+                      display: true,
+                      text: "Accuracy %",
+                  },
+                  grid: {
+                      lineWidth: 0,
+                  },
+              },
+              x: {
+                  ticks: {
+                      font: {
+                          family: "'Montserrat', sans-serif",
+                          size: 10,
+                      },
+                  },
+                  grid: {
+                      lineWidth: 0,
+                  },
+              }
+          },
+      },
+      });
+  }
+  document.getElementById("returnToDashboard5").addEventListener("click", returnToDashboard);
+}
+
 // STARTS HERE:
 
 await initPuzzleDB();
@@ -2717,3 +3103,7 @@ document
 document
   .getElementById("startBtn")
   .addEventListener("click", resumePuzzleTrainer);
+
+document
+  .getElementById("sign")
+  .addEventListener("click", renderPersonalStat);
