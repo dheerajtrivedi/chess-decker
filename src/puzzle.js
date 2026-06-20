@@ -686,8 +686,8 @@ board = new SimpleChessBoard({
   container: boardContainer,
   style: {
       board: {
-          color1: '#D4DFE5',
-          color2: '#799CB1'
+        color1: '#799CB1', 
+        color2: '#D4DFE5'
       }
   },
   position: PUZZLE.fen,

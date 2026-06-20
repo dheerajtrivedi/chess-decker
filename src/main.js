@@ -2742,7 +2742,7 @@ function renderPersonalStat() {
           <div class="setstat-card">
 
             <div class="stat-item">
-              <div class="label">Current Rating</div>
+              <div class="label">Rating</div>
               <div class="value">
                 ${currentRating}
               </div>
@@ -2921,7 +2921,7 @@ function renderPersonalStat() {
           ],
         },
         options: {
-          responsive: true,
+          responsive: false,
           maintainAspectRatio: false,
           layout: {
               padding: {
@@ -2946,7 +2946,7 @@ function renderPersonalStat() {
                   borderWidth: 2,
               },
               point: {
-                  radius: 2,
+                  radius: 1,
               },
           },
           interaction: {
@@ -2999,8 +2999,8 @@ board = new SimpleChessBoard({
   container: boardContainer,
   style: {
       board: {
-          color1: '#D4DFE5',
-          color2: '#799CB1'
+        color1: '#799CB1', 
+        color2: '#D4DFE5'
       }
   },
   position: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
