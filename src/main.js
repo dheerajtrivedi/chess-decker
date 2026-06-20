@@ -2608,6 +2608,23 @@ function deleteSet(setId) {
 
 }
 
+function parseTimestamp(timestamp) {
+  const d = new Date(timestamp);
+
+  const today = new Date();
+  const yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
+  
+  const formatted =
+      d.toDateString() === today.toDateString()
+          ? `Today`
+          : d.toDateString() === yesterday.toDateString()
+          ? `Yesterday`
+          : `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+
+  return formatted;
+}
+
 /** Navigates back to Dashboard*/
 function returnToDashboard() {
   loadPuzzleSets();
@@ -2713,7 +2730,7 @@ function renderPersonalStat() {
 
   const recentAttempts = [...stats]
     .reverse()
-    .slice(0, 10);
+    .slice(0, 50);
 
   personalStatScreen.innerHTML = `
   <div class="modal-overlay">
@@ -2821,15 +2838,14 @@ function renderPersonalStat() {
 
           <div class="table-head">
             <div class="table-head-row personal-stat">
-              <div>#</div>
-              <div>Puzzle</div>
+              <div>Date</div>
+              <div>Rating</div>
               <div>Result</div>
               <div><span class="material-symbols-outlined personal-stat">trending_up</span></div>
             </div>
           </div>
 
           <div class="table-body">
-
             ${
               recentAttempts.length
                 ? recentAttempts
@@ -2839,7 +2855,7 @@ function renderPersonalStat() {
                       class="table-row personal-stat"
                       data-puzzleid="${s.puzzleId}"
                     >
-                      <div>${index + 1}</div>
+                      <div>${parseTimestamp(s.timestamp)}</div>
 
                       <div>
                         ${s.rating}
@@ -2989,6 +3005,15 @@ function renderPersonalStat() {
       });
   }
   document.getElementById("returnToDashboard5").addEventListener("click", returnToDashboard);
+  document
+      .querySelectorAll(".table-row")
+      .forEach((row) => {
+          row.addEventListener("click", () => {
+              const url = new URL("puzzle.html", window.location.origin);
+              url.searchParams.set("puzzleId", row.dataset.puzzleid);
+              window.open(url.toString(), "_blank");
+          });
+      });
 }
 
 // STARTS HERE:
